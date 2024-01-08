@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>webrtc拥塞控制TFB-GCC | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+            <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<!-- <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script> -->
+
+
+<!-- <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    TeX: { equationNumbers: { autoNumber: "AMS" } }
+    });
+  </script> -->
+
+<script type="text/javascript" async
+    src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  webrtc拥塞控制TFB-GCC
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">1月 6, 2024&nbsp;&nbsp;17:47:27</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/webrtc/">webrtc</a>
+                                  
+                                  <a href="/categories/webrtc/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/">拥塞控制</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <p>GCC结合延迟和丢包情况，预测可用带宽来控制发送的码率。webrtc有NACK、FEC等解决丢包问题，带宽估计对较小的丢包不太敏感，而对基于延迟的抖动更大的灵敏度。当延迟变大时，在忽略掉传输数据大小变化的影响后，可以认为是网络堵塞，需要降低码率；而在延迟变小的情况下，认为网络通常，可以提高码率。所以当网络延迟较大，但没有丢包的情况下，GCC也会对带宽进行很大程度的调整。也就是说，延迟稳定的情况下，即使延迟高也不影响带宽估计；如果延迟小但是抖动大，那就会迅速降低估测的带宽。</p>
+<p>REMB-GCC在应对突发峰值流量方面存在一些问题：</p>
+<ol>
+<li>在初始阶段，系统处于Increase状态，当检测到Decrease状态时，会调整码率为 <script type="math/tex">A_r(t_i) = \alpha R_r(t_{i})</script>，此时，可能会出现 <script type="math/tex">R_r(t_{i})<<A_r(t_{i-1})</script>的情况，导致在后续中 <script type="math/tex">A_r</script> 较小。如果此时需要发送关键帧，<strong>PacedSender队列中将有大量数据包等待发送，这将造成较大的排队延迟</strong>。</li>
+<li>码率估计模块反馈给编码器的码率较低，但当编码器需要编码关键帧时，编码器给出的码率仍然比反馈的码率高，这将增加发送关键帧的数据包量。</li>
+</ol>
+<p>这样会导致发送端的排队延迟较大，从而导致接收端的jitterBuffer延迟也较大。目前<code>REMB-GCC算法</code>已被废弃，码率估计模块全部放在发送端。<code>TFB-GCC</code>算法进行了以下改进：</p>
+<ol>
+<li>延迟估算和丢包估算都在发送端处理，接收端只需要定期反馈RTCP包和丢包率。</li>
+<li>延迟估算采用TrendLine滤波器代替Kalman滤波器，通过拟合直线计算延迟梯度，从而估算网络拥塞</li>
+<li>增加了RTP扩展头，添加了<strong>传输层序列号transport-wide sequence number</strong>，用于基于session进行反馈统计。</li>
+<li>扩展了RTCP协议，增加了<strong>接收端Transport-CC RR报文反馈</strong>，该报文包含接收端收到的媒体包序列号和到达时间等信息，用于发送端实现基于延迟的带宽估计。</li>
+</ol>
+<p><img src="01.png" alt="p1" style="zoom:66%;" /></p>
+<h1 id="实现原理分析"><a href="#实现原理分析" class="headerlink" title="实现原理分析"></a>实现原理分析</h1><h2 id="基于延迟的带宽估计"><a href="#基于延迟的带宽估计" class="headerlink" title="基于延迟的带宽估计"></a>基于延迟的带宽估计</h2><h3 id="RTP和RTCP扩展"><a href="#RTP和RTCP扩展" class="headerlink" title="RTP和RTCP扩展"></a>RTP和RTCP扩展</h3><p>RTP报文头如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|V=2|P|X|  CC   |M|     PT      |       sequence number         |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                           timestamp                           |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|           synchronization source (SSRC) identifier            |</span><br><span class="line">+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">|            contributing source (CSRC) identifiers             |</span><br><span class="line">:                             ....                              :</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>扩展位<code>X</code>表示是否启用扩展。<code>TFB-GCC</code>扩展了RTP头，添加了<strong>传输层序列号transport-wide sequence number</strong>，用于基于session进行反馈统计。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|       0xBE    |    0xDE       |           length=1            |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|  ID   | L=1   |transport-wide sequence number | zero padding  |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>2字节的<code>transport-wide sequence number</code>是传输层序列号，会添加到每个要发送的RTP包，发送端每发送一个RTP包序列号就会累加1。当发送端发送多路流时，所有流的 RTP 包的该扩展字段都是连续计数的，不会分开独立计数。该扩展头的作用是为了标识发送的包和反馈的包对应关系，用来进行码率估计；而RTP报文中的序列号是媒体流的序列号，主要用来组帧和抗丢包。</p>
+<p>接收端定期发送的<code>Transport-CC RR</code>报文格式如下：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|V=2|P|  FMT=15 |    PT=205     |           length              |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                     SSRC of packet sender                     |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                      SSRC of media source                     |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|      base sequence number     |      packet status count      |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                 reference time                | fb pkt. count |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|          packet chunk         |         packet chunk          |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">.                                                               .</span><br><span class="line">.                                                               .</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|         packet chunk          |  recv delta   |  recv delta   |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">.                                                               .</span><br><span class="line">.                                                               .</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|           recv delta          |  recv delta   | zero padding  |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure></p>
+<p>FMT根据<code>RFC4585</code>定义是应用层反馈消息。</p>
+<p>base sequence number：此反馈中第⼀个数据包的传输范围序列号，该数字不⼀定会随着每个反馈增加，在重新排序的情况下，它可能会减少。</p>
+<p>packet status count：此反馈包含多少个 RTP 数据包的数量，从由基本序列号标识的数据包开始；比如记录的第一个 RTP 包的 transport sequence number 为 base sequence number，那么记录的第二个 RTP 包 transport sequence number 为 base sequence number + 1。</p>
+<p>reference time：表示参考时间，以 64ms 为单位，RTCP 包记录的 RTP 包到达时间信息以这个 reference time 为基准进行计算。此数据包中的第⼀个 recv 增量是相对于参考时间的。即使某些反馈数据包丢失，参考时间也可以计算反馈之间的增量，因为它始终使用相同的时基。</p>
+<p>feedback packets count：用于记录接收端发送的 Transport-wide 反馈包的个数，每发送⼀个反馈数据包，计数器就加一。这个字段可用于检测反馈包是否丢失。</p>
+<p>packet chunk：数据包状态块列表，用来指示数据包到达的状态，指示的 RTP 数据包范围是从基本序列号标识的数据包开始的多个数据包。</p>
+<p>recv delta：对于 packet chunk 中的“packet received”状态的包，也就是收到的 RTP 包，在 recv delta 列表中添加对应的的到达时间间隔信息，用于记录 RTP 包到达时间信息。通过前面的基整时间以及 recv delta，发送端可以计算出该 RTP 包在接收端的到达时间。</p>
+<p>base sequence number:2字节，TransportFeedback包中记录的第一个RTP包的transport sequence number，在反馈的各个TransportFeedback RTCP包中，这个字段不一定是递增的，也有可能比之前的RTCP包小<br>packet status count:2字节，表示这个TransportFeedback包记录了多少个RTP包信息，这些RTP的transport sequence number以base sequence number为基准<br>，比如记录的第一个RTP包的transport sequence number为base sequence number，那么记录的第二个RTP包transport sequence number为base sequence number+1</p>
+<p>reference time:3字节，表示参考时间，以64ms为单位，RTCP包记录的RTP包到达时间信息以这个reference time为基准进行计算<br>feedback packet count:1字节，用于计数发送的每个TransportFeedback包，相当于RTCP包的序列号。可用于检测TransportFeedback包的丢包情况<br>packet chunk:2字节，记录RTP包的到达状态，记录的这些RTP包transport sequence number通过base sequence number计算得到<br>recv delta: 8bits，对于”packet received”状态的包，也就是收到的RTP包，在recv delta列表中添加对应的的到达时间间隔信息，用于记录RTP包到达时间信息。通过前面的reference time以及recv delta信息，我们就可以得到RTP包到达时间</p>
+<p>接收到的包seq和包的接收时间</p>
+<p>丢失的包seq</p>
+<p>SSRC of media source: 32 bits The synchronization source identifier of the media source that this piece of feedback information is related to. TODO: This is transport wide, do we just pick any of the media source SSRCs? - 这个反馈消息包对应的媒体流的同步源标识，这个值待确定，因为这是一个传输通道范围的反馈，这个值必要性不大，可以随意选取一个 media SSRC base sequence number: 16 bits The transport-wide sequence number of the first packet in this feedback. This number is not necessarily increased for every feedback; in the case of reordering it may be decreased. - 该 fb 包首个 rtp 包的 transport seq，非 rtp 包序列号。 packet status count: 16 bits The number of packets this feedback contains status for, starting with the packet identified by the base sequence number. - 该 fb packet 包含 rtp 包个数。 reference time: 24 bits Signed integer indicating an absolute reference time in some (unknown) time base chosen by the sender of the feedback packets. The value is to be interpreted in multiples of 64ms. The first recv delta in this packet is relative to the reference time. The reference time makes it possible to calculate the delta between feedbacks even if some feedback packets are lost, since it always uses the same time base. - 参考时间，fb 包首个 rtp 的到达时间/64 feedback packet count: 8 bits A counter incremented by one for each feedback packet sent. Used to detect feedback packet losses. - 已发送 feedback 包计数器，可用于 fb packet 丢失检测 packet chunk: 16 bits A list of packet status chunks. These indicate the status of a number of packets starting with the one identified by base sequence number. See below for details. <strong> - 描述 rtp 包 4 种状态（见：4.2），有 Run Length Chunk 和 Status Vector Chunk 两种格式</strong> recv delta: 8 bits For each “packet received” status, in the packet status chunks, a receive delta block will follow. See details below. - 当 rtp 包的状态为 Packet received，通过 recv delta 记录其与前一个 rtp 包到达的时间间隔。</p>
+<p>base sequence number：记录要反馈的第一个 RTP 包的 transport-wide sequence number</p>
+<p>packet status count：该反馈报文包含了多少个 RTP 包的到达状态</p>
+<p>reference time：接收端反馈报文的第一个包接收的基准时间（24bit），其值单位为 64ms</p>
+<p>fb pkt.count：反馈报文发送的数量，相当于 RTCP RTPFB 报文的序号</p>
+<p>packet chunk：记录发送端发送的 RTP 包的到达状态，该结构根据第 0 位的值可以表示为 Run length chunk 和 Status vector chunk</p>
+<p>解析这个报文能得到<br>接收到的包seq和包的接收时间</p>
+<p>丢失的包seq</p>
+<font color = 'red'> 待更新</font>
+
+<p>Run length chunk 结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                </span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|T| S |       Run Length        |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>Status vector chunk 结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                </span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|T|S|       symbol list         |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>Rtp Packet Status 包的状态 (Packet Status) 表示为 2 个比特的符号： 00 Packet not received （包未收到） 01 Packet received, small delta （包收到，间隔时间很小 ） 10 Packet received, large or negative delta（ 包收到，间隔时间很大或者为负数） 11 [Reserved], packet received, w/o recv delta (包收到了，但是没有间隔时间)</p>
+<h3 id="包组"><a href="#包组" class="headerlink" title="包组"></a>包组</h3><p>相邻两包组的接收时间差减去发送时间差 <script type="math/tex">d_i = (t_i-t_{i-1})-(T_i-T_{i-1})</script>，对于正常的网络应该为0，出现拥堵报文被延迟，值增大。</p>
+<p>WebRTC是将<code>发送时间间隔小于5ms的数据包被归为一组（单个包误差大）</code>，计算组间的整体延迟梯度，且必须在发送方开启pacing发送。原因为：</p>
+<ol>
+<li>发送端的pacer模块的调度一般是5ms一次发送多个数据包。</li>
+<li>wifi网络下存在短暂的信道中断现象，造成数据包的堆积，造成数据包burst（爆发式发送）。</li>
+</ol>
+<p>分组的实现：</p>
+<ol>
+<li>距离当前group第一个包发送时间在<code>5ms</code>内属于同一个group，超过则开始新的分组</li>
+<li>一个数据包相当于所在的group是burst，仍然归到这个group中</li>
+<li>同一时间发送的数据，是发送端burst现象，一定是属于同一个group。wifi环境下的中断导致一段时间内的包聚集到达现象。burst现象判断的条件是：相对上一个包的传输延迟 <script type="math/tex">d_i<0</script>、距离上个包接收时间小于等于5ms、分组的接收时间跨度小于100ms。</li>
+</ol>
+<p>上边第三点，判断数据包是否属于一个burst代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">InterArrivalDelta::BelongsToBurst</span><span class="params">(Timestamp arrival_time,</span></span></span><br><span class="line"><span class="params"><span class="function">                                       Timestamp send_time)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 当前时间戳组的完成时间是有限的</span></span><br><span class="line">  <span class="built_in">RTC_DCHECK</span>(current_timestamp_group_.complete_time.<span class="built_in">IsFinite</span>());</span><br><span class="line">  <span class="comment">// 到达时间与当前时间戳组完成时间的时间差</span></span><br><span class="line">  TimeDelta arrival_time_delta =</span><br><span class="line">      arrival_time - current_timestamp_group_.complete_time;</span><br><span class="line">  <span class="comment">// 发送时间与当前时间戳组发送时间的时间差</span></span><br><span class="line">  TimeDelta send_time_delta = send_time - current_timestamp_group_.send_time;</span><br><span class="line">  <span class="comment">// 发送时间差为零，属于burst</span></span><br><span class="line">  <span class="keyword">if</span> (send_time_delta.<span class="built_in">IsZero</span>()) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  <span class="comment">// 传播时间差（到达时间差 - 发送时间差）</span></span><br><span class="line">  TimeDelta propagation_delta = arrival_time_delta - send_time_delta;</span><br><span class="line">  <span class="comment">// 传播时间差小于零，到达时间差&lt;= 5ms，到达时间与当前时间戳组的第一个到达时间的时间差小于100ms，属于burst</span></span><br><span class="line">  <span class="keyword">if</span> (propagation_delta &lt; TimeDelta::<span class="built_in">Zero</span>() &amp;&amp;</span><br><span class="line">      arrival_time_delta &lt;= kBurstDeltaThreshold &amp;&amp;</span><br><span class="line">      arrival_time - current_timestamp_group_.first_arrival &lt; kMaxBurstDuration)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="基于丢包的带宽估计"><a href="#基于丢包的带宽估计" class="headerlink" title="基于丢包的带宽估计"></a>基于丢包的带宽估计</h2><h1 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h1><p><code>REB-GCC</code>在发送端实现，主要是<code>SendSideBandwidthEstimation</code>类。<code>SendSideBandwidthEstimation::SetSendBitrate</code>函数设置初始的预估带宽为300kbps。<code>SendSideBandwidthEstimation::UpdateEstimate</code>函数根据丢包、RTT及当前带宽的估计值调整下个时刻的估计带宽，在函数中有三次调用：</p>
+<ul>
+<li><code>SendSideBandwidthEstimation::UpdatePacketsLost</code>函数</li>
+<li><code>SendSideBandwidthEstimation::UpdateLossBasedEstimator</code>函数</li>
+<li><code>GoogCcNetworkController::OnProcessInterval</code>函数</li>
+</ul>
+<p>主要有两种触发方式<font color='red'>要修改</font>：</p>
+<ul>
+<li>收到RR包，受限于RR包的频率，大概1秒1次，更新了丢包率、RTT之后调用；</li>
+<li>定时器，25ms一次，kUpdateIntervalMs=25，这个应该是为了防止RR包丢失或者不及时，更迅速灵敏的进行调整；</li>
+</ul>
+<h2 id="基于延迟的实现"><a href="#基于延迟的实现" class="headerlink" title="基于延迟的实现"></a>基于延迟的实现</h2><h3 id="到达时间滤波器"><a href="#到达时间滤波器" class="headerlink" title="到达时间滤波器"></a>到达时间滤波器</h3><p>接收到传输的<code>Transport-CC</code>反馈信息的时候，会调用<code>RtpTransportControllerSend::OnTransportFeedback</code>函数。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">RtpTransportControllerSend::OnTransportFeedback</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    Timestamp receive_time,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">const</span> rtcp::TransportFeedback&amp; feedback)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">RTC_DCHECK_RUN_ON</span>(&amp;sequence_checker_);</span><br><span class="line">  feedback_demuxer_.<span class="built_in">OnTransportFeedback</span>(feedback);</span><br><span class="line">  <span class="comment">// 获取包的到达状态信息</span></span><br><span class="line">  absl::optional&lt;TransportPacketsFeedback&gt; feedback_msg =</span><br><span class="line">      transport_feedback_adapter_.<span class="built_in">ProcessTransportFeedback</span>(feedback,</span><br><span class="line">                                                           receive_time);</span><br><span class="line">  <span class="keyword">if</span> (feedback_msg) &#123;</span><br><span class="line">    <span class="keyword">if</span> (controller_)</span><br><span class="line">	  <span class="comment">// 基于延时梯度进行带宽预估，并处理传输的反馈以更新控制器的状态</span></span><br><span class="line">      <span class="built_in">PostUpdates</span>(controller_-&gt;<span class="built_in">OnTransportPacketsFeedback</span>(*feedback_msg));</span><br><span class="line">    <span class="comment">// 只有在任何数据包第一次被确认时才更新未完成的数据</span></span><br><span class="line">    <span class="built_in">UpdateCongestedState</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ProcessTransportFeedbackInner</code>根据<code>Transport-CC</code>报文的内容，返回一个<code>std::vector&lt;PacketResult&gt;</code>对象，包含每个包的发送时间和相对到达时间，用来计算单向相对延时。</p>
+<p><code>DelayBasedBwe::IncomingPacketFeedbackVector</code>分析延时梯度变化计算基于延时的梯度</p>
+<p><code>InterArrival::ComputeDeltas</code>函数包组发送和到达的时间差 <script type="math/tex">t_i-t_{i-1}</script> 和 <script type="math/tex">T_i-T_{i-1}</script></p>
+<p><code>TrendlineEstimator::Update</code>计算基于延迟的带宽估计，进行Trendline Filter滤波的过程。</p>
+<p><code>DelayBasedBwe::MaybeUpdateEstimate</code>更新基于延迟估计的码率。</p>
+<p><code>SendSideBandwidthEstimation::UpdateDelayBasedEstimate</code>更新基于延迟的带宽。</p>
+<p>遍历包组调用<code>DelayBasedBwe::IncomingPacketFeedback</code>进行基于延迟的带宽估计</p>
+<p><code>AimdRateControl::ChangeState</code>由过载检测器发出的状态信息<code>kBwNormal/kBwUnderusing/kBwOverusing</code>改变状态机的状态</p>
+<p><code>AimdRateControl::ChangeBitrate</code>根据AIMD对码率进行调整。</p>
+<h3 id="Trendline-Filter"><a href="#Trendline-Filter" class="headerlink" title="Trendline Filter"></a>Trendline Filter</h3><p>新版本中用<code>Trendline Filter</code>根据到达时间差、发送时间差、数据大小来估计单向延迟的趋势。这部分代码在<code>TrendlineEstimator::UpdateTrendline</code>函数开始实现，在<code>TrendlineEstimator::Update</code>函数中调用</p>
+<p>单个包组传输的延迟梯度为: <script type="math/tex">d_i = (t_i-t_{i-1})-(T_i-T_{i-1})</script></p>
+<p>每个包组叠加延迟为: <script type="math/tex">acc_{delay_i } = \sum d_i</script></p>
+<p>接下来进行平滑操作。这部分代码为: </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">TrendlineEstimator::UpdateTrendline</span><span class="params">(<span class="type">double</span> recv_delta_ms,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         <span class="type">double</span> send_delta_ms,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         <span class="type">int64_t</span> send_time_ms,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         <span class="type">int64_t</span> arrival_time_ms,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         <span class="type">size_t</span> packet_size)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 单个包组的延迟梯度</span></span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> delta_ms = recv_delta_ms - send_delta_ms;</span><br><span class="line">  ++num_of_deltas_;</span><br><span class="line">  num_of_deltas_ = std::<span class="built_in">min</span>(num_of_deltas_, kDeltaCounterMax);</span><br><span class="line">  <span class="keyword">if</span> (first_arrival_time_ms_ == <span class="number">-1</span>)</span><br><span class="line">    first_arrival_time_ms_ = arrival_time_ms;</span><br><span class="line">  <span class="comment">// 包组叠加延迟</span></span><br><span class="line">  accumulated_delay_ += delta_ms;</span><br><span class="line">  <span class="built_in">BWE_TEST_LOGGING_PLOT</span>(<span class="number">1</span>, <span class="string">&quot;accumulated_delay_ms&quot;</span>, arrival_time_ms,</span><br><span class="line">                        accumulated_delay_);</span><br><span class="line">  <span class="comment">// 平滑操作</span></span><br><span class="line">  smoothed_delay_ = smoothing_coef_ * smoothed_delay_ +</span><br><span class="line">                    (<span class="number">1</span> - smoothing_coef_) * accumulated_delay_;</span><br><span class="line">  <span class="built_in">BWE_TEST_LOGGING_PLOT</span>(<span class="number">1</span>, <span class="string">&quot;smoothed_delay_ms&quot;</span>, arrival_time_ms,</span><br><span class="line">                        smoothed_delay_);</span><br><span class="line">  ...</span><br><span class="line">  <span class="built_in">Detect</span>(trend, send_delta_ms, arrival_time_ms);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最小二乘计算斜率 <script type="math/tex">k</script> 在<code>absl::optional&lt;double&gt; LinearFitSlope</code>函数中计算:</p>
+<script type="math/tex; mode=display">
+k=\frac{\sum_{i} \left(y_i-\bar{y} \right)\left(x_i-\bar{x} \right)}{\sum_{i}\left(x_i-\bar{x} \right)^2}</script><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">absl::optional&lt;<span class="type">double</span>&gt; <span class="title">LinearFitSlope</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">const</span> std::deque&lt;TrendlineEstimator::PacketTiming&gt;&amp; packets)</span> </span>&#123;</span><br><span class="line">  <span class="built_in">RTC_DCHECK</span>(packets.<span class="built_in">size</span>() &gt;= <span class="number">2</span>);</span><br><span class="line">  <span class="comment">// Compute the &quot;center of mass&quot;.</span></span><br><span class="line">  <span class="type">double</span> sum_x = <span class="number">0</span>;</span><br><span class="line">  <span class="type">double</span> sum_y = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span>&amp; packet : packets) &#123;</span><br><span class="line">    sum_x += packet.arrival_time_ms;</span><br><span class="line">    sum_y += packet.smoothed_delay_ms;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">double</span> x_avg = sum_x / packets.<span class="built_in">size</span>();</span><br><span class="line">  <span class="type">double</span> y_avg = sum_y / packets.<span class="built_in">size</span>();</span><br><span class="line">  <span class="comment">// Compute the slope k = \sum (x_i-x_avg)(y_i-y_avg) / \sum (x_i-x_avg)^2</span></span><br><span class="line">  <span class="type">double</span> numerator = <span class="number">0</span>;</span><br><span class="line">  <span class="type">double</span> denominator = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span>&amp; packet : packets) &#123;</span><br><span class="line">    <span class="type">double</span> x = packet.arrival_time_ms;</span><br><span class="line">    <span class="type">double</span> y = packet.smoothed_delay_ms;</span><br><span class="line">    numerator += (x - x_avg) * (y - y_avg);</span><br><span class="line">    denominator += (x - x_avg) * (x - x_avg);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (denominator == <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> absl::<span class="literal">nullopt</span>;</span><br><span class="line">  <span class="keyword">return</span> numerator / denominator;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用最小二乘法拟合直线 <script type="math/tex">y=kx+b</script>，这里边的 <script type="math/tex">x</script> 是包组的接收时间，<script type="math/tex">y</script> 是<code>smoothed_delay</code>，<script type="math/tex">k</script> 就是<code>trend</code>。</p>
+<h3 id="过载检测器"><a href="#过载检测器" class="headerlink" title="过载检测器"></a>过载检测器</h3><p><code>TrendlineEstimator::Detect</code>函数根据<code>trend</code>判断当前带宽的状态。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">TrendlineEstimator::Detect</span><span class="params">(<span class="type">double</span> trend, <span class="type">double</span> ts_delta, <span class="type">int64_t</span> now_ms)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (num_of_deltas_ &lt; <span class="number">2</span>) &#123;</span><br><span class="line">    hypothesis_ = BandwidthUsage::kBwNormal;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 拥塞的时候 trend 比较小，一般要先进行修正:</span></span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> modified_trend =</span><br><span class="line">      std::<span class="built_in">min</span>(num_of_deltas_, kMinNumDeltas) * trend * threshold_gain_;</span><br><span class="line">  prev_modified_trend_ = modified_trend;</span><br><span class="line">  <span class="built_in">BWE_TEST_LOGGING_PLOT</span>(<span class="number">1</span>, <span class="string">&quot;T&quot;</span>, now_ms, modified_trend);</span><br><span class="line">  <span class="built_in">BWE_TEST_LOGGING_PLOT</span>(<span class="number">1</span>, <span class="string">&quot;threshold&quot;</span>, now_ms, threshold_);</span><br><span class="line">  <span class="comment">// 修正后和阈值比较，判断当前状态。初始阈值 T=12.5</span></span><br><span class="line">  <span class="keyword">if</span> (modified_trend &gt; threshold_) &#123;</span><br><span class="line">    <span class="keyword">if</span> (time_over_using_ == <span class="number">-1</span>) &#123;</span><br><span class="line">      <span class="comment">// Initialize the timer. Assume that we&#x27;ve been</span></span><br><span class="line">      <span class="comment">// over-using half of the time since the previous</span></span><br><span class="line">      <span class="comment">// sample.</span></span><br><span class="line">      time_over_using_ = ts_delta / <span class="number">2</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// Increment timer</span></span><br><span class="line">      time_over_using_ += ts_delta;</span><br><span class="line">    &#125;</span><br><span class="line">    overuse_counter_++;</span><br><span class="line">    <span class="comment">// 为了抗抖动，持续时间大于设定的阈值时间overusing_time_threshold_</span></span><br><span class="line">    <span class="keyword">if</span> (time_over_using_ &gt; overusing_time_threshold_ &amp;&amp; overuse_counter_ &gt; <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="comment">// 比上一次延时梯度大</span></span><br><span class="line">      <span class="keyword">if</span> (trend &gt;= prev_trend_) &#123;</span><br><span class="line">        time_over_using_ = <span class="number">0</span>;</span><br><span class="line">        overuse_counter_ = <span class="number">0</span>;</span><br><span class="line">        hypothesis_ = BandwidthUsage::kBwOverusing;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (modified_trend &lt; -threshold_) &#123;</span><br><span class="line">    <span class="comment">// 网络拥塞队列在变小，拥塞情况在改善，判断处于 underuse 状态</span></span><br><span class="line">    time_over_using_ = <span class="number">-1</span>;</span><br><span class="line">    overuse_counter_ = <span class="number">0</span>;</span><br><span class="line">    hypothesis_ = BandwidthUsage::kBwUnderusing;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 判断处于 normal 状态</span></span><br><span class="line">    time_over_using_ = <span class="number">-1</span>;</span><br><span class="line">    overuse_counter_ = <span class="number">0</span>;</span><br><span class="line">    hypothesis_ = BandwidthUsage::kBwNormal;</span><br><span class="line">  &#125;</span><br><span class="line">  prev_trend_ = trend;</span><br><span class="line">  <span class="comment">// 更新阈值</span></span><br><span class="line">  <span class="built_in">UpdateThreshold</span>(modified_trend, now_ms);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码中，<code>kMinNumDeltas,threshold_gain_</code>取值分别为60和4。</p>
+<h3 id="自适应阈值"><a href="#自适应阈值" class="headerlink" title="自适应阈值"></a>自适应阈值</h3><p>理想状况下，网络的延迟梯度是0，实际的网络中，不同转发路径的延迟梯度有波动且波动大小不同。<strong>如果设置阈值固定的太大可能无法探测到拥塞，太小导致算法对单项延迟梯度的变化很敏感，过度检测器会频繁检测到过载信号</strong>，导致基于时延的控制器会因为这个时延变化不断减小预测的带宽。实验中显示固定的阈值，GCC由于TCP流（TCP是基于丢包的拥塞控制）的时延产生大量的过载信号，导致有限状态机总是调低发送码率，最终导致GCC码率耗尽，即在和TCP流的竞争中，GCC流量出现饥饿现象。WebRTC使用了一种自适应的阈值调节算法：</p>
+<script type="math/tex; mode=display">
+threshold(t_i) = threshold(t_{i-1}) + K*\Delta T *\left(|trend(t_i)|-threshold(t_{i-1})\right)</script><p>其中 <script type="math/tex">\Delta T = t_i - t_{i-1}</script> 表示两组包计算延时梯度的时间差，意义就是距上次更新阈值时的时间间隔，每组数据包会触发一次探测，同时更新一次阈值。<script type="math/tex">k</script> 是一个变化率，增长的基值是：当前的<code>trend</code>和上一个阈值的差值：</p>
+<script type="math/tex; mode=display">
+K = \begin{cases}
+   k_d & |trend(t_i)|<threshold(t_{i-1}) \\
+   k_u & otherwise
+\end{cases}</script><p>其中 <script type="math/tex">k_u=0.01,k_d=0.00018,k_u>k_d</script> 阈值可以<strong>快升慢降</strong>。当网络处于正常状态时，阈值会以一个较小的变化率减小，当处于过载或低负载时，阈值会以一个相对大一点的变化率增大。</p>
+<p>过载检测器之后，要进行阈值的更新，在<code>TrendlineEstimator::UpdateThreshold</code>函数实现。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">TrendlineEstimator::UpdateThreshold</span><span class="params">(<span class="type">double</span> modified_trend,</span></span></span><br><span class="line"><span class="params"><span class="function">                                         <span class="type">int64_t</span> now_ms)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (last_update_ms_ == <span class="number">-1</span>)</span><br><span class="line">    last_update_ms_ = now_ms;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">fabs</span>(modified_trend) &gt; threshold_ + kMaxAdaptOffsetMs) &#123;</span><br><span class="line">    <span class="comment">// Avoid adapting the threshold to big latency spikes, caused e.g.,</span></span><br><span class="line">    <span class="comment">// by a sudden capacity drop.</span></span><br><span class="line">    last_update_ms_ = now_ms;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 选择变化率</span></span><br><span class="line">  <span class="type">const</span> <span class="type">double</span> k = <span class="built_in">fabs</span>(modified_trend) &lt; threshold_ ? k_down_ : k_up_;</span><br><span class="line">  <span class="type">const</span> <span class="type">int64_t</span> kMaxTimeDeltaMs = <span class="number">100</span>;</span><br><span class="line">  <span class="type">int64_t</span> time_delta_ms = std::<span class="built_in">min</span>(now_ms - last_update_ms_, kMaxTimeDeltaMs);</span><br><span class="line">  <span class="comment">// 更新阈值并进行clip操作</span></span><br><span class="line">  threshold_ += k * (<span class="built_in">fabs</span>(modified_trend) - threshold_) * time_delta_ms;</span><br><span class="line">  threshold_ = rtc::<span class="built_in">SafeClamp</span>(threshold_, <span class="number">6.f</span>, <span class="number">600.f</span>);</span><br><span class="line">  last_update_ms_ = now_ms;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="码率控制器"><a href="#码率控制器" class="headerlink" title="码率控制器"></a>码率控制器</h3><p>码率控制维护一个状态机，<strong>根据过载探测器输出的信号，估算基于延迟的网络速率</strong> <script type="math/tex">A_r</script>。</p>
+<p><img src="02.png" alt="p2" style="zoom:32%;" /></p>
+<p>有限状态机的目标是最小化端到端路径上缓冲区中的排队延迟。当网络拥塞时，过载检测器触发overuse信号，状态机处于 Decrase状态，应该降低发送码率，降低为过去 $500 ms$ 时间窗口内的最大 <code>acked_bitrate</code>的0.85倍；当网络中排队的数据包被快速释放时，过载检测器触发underuse信号，状态机进入hold状态；直到缓冲区被清空，网络平稳，过载检测器触发normal信号，状态机进入increase状态，开始探测是否可以增加发送码率。码率的调整根据以下式子：</p>
+<script type="math/tex; mode=display">
+A_r(t_i) = \begin{cases}
+    \eta A_r(t_{i-1}) & \sigma=Increase \\
+    \alpha R_r(t_{i}) & \sigma=Decrease \\
+    A_r(t_{i-1}) & \sigma=Hold 
+\end{cases}</script><p>其中 <script type="math/tex">\eta=1.05, \alpha = 0.85</script>。</p>
+<p><code>AimdRateControl::ChangeState</code>由过载检测器发出的状态信息<code>kBwNormal/kBwUnderusing/kBwOverusing</code>改变状态机的状态：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">AimdRateControl::ChangeState</span><span class="params">(<span class="type">const</span> RateControlInput&amp; input,</span></span></span><br><span class="line"><span class="params"><span class="function">                                  Timestamp at_time)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">switch</span> (input.bw_state) &#123;</span><br><span class="line">    <span class="comment">// 改变状态，if多一层判断</span></span><br><span class="line">    <span class="keyword">case</span> BandwidthUsage::kBwNormal:</span><br><span class="line">      <span class="keyword">if</span> (rate_control_state_ == RateControlState::kRcHold) &#123;</span><br><span class="line">        time_last_bitrate_change_ = at_time;</span><br><span class="line">        rate_control_state_ = RateControlState::kRcIncrease;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> BandwidthUsage::kBwOverusing:</span><br><span class="line">      <span class="keyword">if</span> (rate_control_state_ != RateControlState::kRcDecrease) &#123;</span><br><span class="line">        rate_control_state_ = RateControlState::kRcDecrease;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> BandwidthUsage::kBwUnderusing:</span><br><span class="line">      rate_control_state_ = RateControlState::kRcHold;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="built_in">RTC_DCHECK_NOTREACHED</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>AimdRateControl::ChangeBitrate</code>根据AIMD对码率进行调整。</p>
+<p>最终在将基于延的最大码率值保存到<code>SendSideBandwidthEstimation::delay_based_limit_</code>中。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">SendSideBandwidthEstimation::UpdateDelayBasedEstimate</span><span class="params">(Timestamp at_time,</span></span></span><br><span class="line"><span class="params"><span class="function">                                                           DataRate bitrate)</span> </span>&#123;</span><br><span class="line">  link_capacity_.<span class="built_in">UpdateDelayBasedEstimate</span>(at_time, bitrate);</span><br><span class="line">  <span class="comment">// TODO(srte): Ensure caller passes PlusInfinity, not zero, to represent no</span></span><br><span class="line">  <span class="comment">// limitation.</span></span><br><span class="line">  delay_based_limit_ = bitrate.<span class="built_in">IsZero</span>() ? DataRate::<span class="built_in">PlusInfinity</span>() : bitrate;</span><br><span class="line">  <span class="built_in">ApplyTargetLimits</span>(at_time);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="基于丢包的实现"><a href="#基于丢包的实现" class="headerlink" title="基于丢包的实现"></a>基于丢包的实现</h2><p>基于延时的算法通过监测网络延时的变化趋势来估计可用带宽，只在网络路径上的缓存队列比较长时才比较可靠。如果缓存队列较短，则可以根据丢包率来判断是否存在过载。相比之下，基于丢包的算法是应对已经发生拥塞情况的紧急措施。在物理链路中，大量丢包通常发生在路由器缓冲区已满时，这时必须降低发送数据量以使网络恢复。</p>
+<p>发送端的基于丢包率的带宽估计方法是根据丢包数量评估网络拥塞程度，目的是当延迟估计模块的带宽调整不够及时时，可以用丢包率来进一步调整。丢包越多，表示网络拥塞越严重，需要降低发送码率来减轻拥塞；如果没有丢包，则说明网络状况良好，可以增加发送码率来探测更多可用带宽。该算法的关键是获取接收端的丢包率，并确定降低和提高发送码率的阈值。</p>
+<script type="math/tex; mode=display">
+A_s(t_k) = \begin{cases}
+    A_s(t_{k-1})(1-0.5f_l(t_k)) & f_l(t_k)>0.1 \\
+    1.05A_s(t_{k-1}) & f_l(t_k)<0.02 \\
+    f_l(t_k) & otherwise 
+\end{cases}</script><p>当丢包率大于10%时，认为网络拥塞严重，应该主动降低发送码率以减轻拥塞。丢包率越高，发送码率降低的越多，最大可降低到原码率的50%。当丢包率小于2%时，认为网络状况良好，可以适当提高发送码率5%，探测是否有更多带宽可用。当丢包率在2%~10%时,认为网络拥塞一般，此时保持当前发送码率不变。这可以避免网络固有丢包被错判为拥塞导致不必要的码率降低，而这部分丢包则需要通过NACK、FEC等其他机制来进行数据恢复。</p>
+<p>丢包率、RTT的计算通过RTCP包来实现</p>
+<h3 id="SR包"><a href="#SR包" class="headerlink" title="SR包"></a>SR包</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">        0              1                2               3</span><br><span class="line">        0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">header |V=2|P|    RC   |   PT=SR=200   |             length            |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                         SSRC of sender                        |</span><br><span class="line">       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">sender |              NTP timestamp, most significant word             |</span><br><span class="line">info   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |             NTP timestamp, least significant word             |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                         RTP timestamp                         |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                     sender&#x27;s packet count                     |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                      sender&#x27;s octet count                     |</span><br><span class="line">       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">report |                 SSRC_1 (SSRC of first source)                 |</span><br><span class="line">block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">  1    | fraction lost |       cumulative number of packets lost       |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |           extended highest sequence number received           |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                      interarrival jitter                      |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                         last SR (LSR)                         |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">       |                   delay since last SR (DLSR)                  |</span><br><span class="line">       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">report |                 SSRC_2 (SSRC of second source)                |</span><br><span class="line">block  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">  2    :                               ...                             :</span><br><span class="line">       +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">       |                  profile-specific extensions                  |</span><br><span class="line">       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>发送端解析接收端发过来的 RTCP RR 报文的lost fraction字段来判断丢包，它描述了从上一次 RR 报文发送后到本次 RR 报文期间的丢包率。</p>
+<h2 id="带宽确定"><a href="#带宽确定" class="headerlink" title="带宽确定"></a>带宽确定</h2><p>最后<code>SendSideBandwidthEstimation::UpdateTargetBitrate</code>中会取根据丢包得到的预估值和根据延时梯度得到的预估值中的较小值作为最终预估的最大码率。</p>
+<p>确定完目标码率后会更新到 pacer，fec，编码模块中发挥作用。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ab32a8a3552f">WebRTC基于TransportCC和Trendline Filter的发送端码率估计(Sendside-BWE)</a><br><a target="_blank" rel="noopener" href="http://www.rtcbits.com/2017/01/bandwidth-estimation-in-webrtc-and-new.html">Bandwidth Estimation in WebRTC (and the new Sender Side BWE)</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/sonysuqin/article/details/106186374">WebRTC GCC拥塞控制算法详解</a></p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="http://example.com/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6TFB-GCC/">http://example.com/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6TFB-GCC/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/webrtc/"># webrtc</a>
+                            
+                            <a href="/tags/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/"># 拥塞控制</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/01/06/RTMP%E5%8D%8F%E8%AE%AE/">RTMP协议</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6REMB-GCC/">webrtc拥塞控制REMB-GCC</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>webrtc下载编译 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  webrtc下载编译
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">1月 6, 2024&nbsp;&nbsp;17:25:03</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/webrtc/">webrtc</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h1 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h1><p>所用系统环境为Ubuntu 22.04.3 LTS x86_64，6.2.0-34-generic，非管理员账户</p>
+<h1 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h1><p>编译过程在用户根目录进行</p>
+<h2 id="安装depot-tools"><a href="#安装depot-tools" class="headerlink" title="安装depot tools"></a>安装depot tools</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git</span><br><span class="line">export PATH=&quot;$PATH:~/depot_tools&quot;</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+<h2 id="获取源码"><a href="#获取源码" class="headerlink" title="获取源码"></a>获取源码</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir webrtc-checkout</span><br><span class="line">cd webrtc-checkout</span><br><span class="line">fetch --nohooks webrtc</span><br><span class="line">gclient sync</span><br></pre></td></tr></table></figure>
+<p>在<code>fetch --nohooks webrtc</code>的时候报错<code>/home/lcp/depot_tools/vpython3: line 52: /home/lcp/depot_tools/.cipd_bin/vpython3: No such file or directory</code>，代理有问题。根据实际情况设置代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=socks5://10.8.14.179:7890</span><br><span class="line">export https_proxy=socks5://10.8.14.179:7890</span><br><span class="line">export socks_proxy=socks5://10.8.14.179:7980</span><br></pre></td></tr></table></figure>
+<p>执行<code>fetch --nohooks webrtc</code>输出部分如下：</p>
+<p><img src="01.png" alt="p1"></p>
+<!-- <figure style="text-align: center;">
+  <img src="01.png" alt="jpg name">
+  <figcaption>图1</figcaption>
+</figure> -->
+<p><code>fetch --nohooks webrtc</code>最终结果如下：</p>
+<p><img src="03.png" alt="p3"></p>
+<!-- <figure style="text-align: center;">
+  <img src="03.png" alt="jpg name">
+  <figcaption>图3</figcaption>
+</figure> -->
+<p>接下来进行<code>gclient sync</code>代码同步，但是会出现各种报错，比如<code>To use a proxy in this situation, please supply those settingsin a .boto</code>，原因是gclient不会自动去找到代理端口和地址，要增加.boto文件，其它报错大概率也是代理的问题。</p>
+<p>这里在webrtc-checkout文件夹下创建.boto，添加如下内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[Boto]</span><br><span class="line">proxy = 10.8.14.179</span><br><span class="line">proxy_port = 7890</span><br></pre></td></tr></table></figure>
+<p>在<code>.bashrc</code>添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export NO_AUTH_BOTO_CONFIG=/home/lcp/webrtc-checkout/.boto</span><br></pre></td></tr></table></figure>
+<p>最后执行<code>gclient sync</code>，显示输出如下：<br><!-- ![p4](04.png) --></p>
+<p><img src="04.png" alt="p4"></p>
+<p>重新多次执行<code>gclient sync</code>，确保效果，最终输出如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lcp@node01:~/webrtc-checkout$ gclient sync</span><br><span class="line">Syncing projects: 100% (50/50),done.</span><br><span class="line">Running hooks: 100% (31/31), done. </span><br></pre></td></tr></table></figure>
+<h2 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd src</span><br><span class="line">./build/install-build-deps.sh</span><br></pre></td></tr></table></figure>
+<p>碰到了管理员问题，普通用户不能sudo装包，在管理员账户中，执行命令<code>sudo visudo</code>，然后添加<code>lcp ALL=(ALL) ALL</code>，ctrl+o保存，回车确认，ctrl+x退出，然后重新执行上边的命令即可</p>
+<h2 id="本地分支"><a href="#本地分支" class="headerlink" title="本地分支"></a>本地分支</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd src</span><br><span class="line">git checkout master</span><br><span class="line">git new-branch localRTC</span><br></pre></td></tr></table></figure>
+<p>创建本地分支<code>localRTC</code>，<code>git branch</code>查看当前分支，<code>git switch localRTC</code>切换到新分支</p>
+<p>更新本地分支</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git checkout master</span><br><span class="line">git pull origin master</span><br><span class="line">gclient sync</span><br><span class="line">git checkout localRTC</span><br><span class="line">git merge master</span><br></pre></td></tr></table></figure>
+<p>切换到<code>master</code>分支，从仓库拉最新的代码跟新本地的<code>master</code>分支代码，<code>gclient sync</code>同步项目中的所有相关仓库，确保所有代码库都是最新状态，切换到本地分支<code>localRTC</code>，然后把<code>master</code>分支的更改合并到本地的<code>localRTC</code>分支。</p>
+<h2 id="生成Ninja工程文件"><a href="#生成Ninja工程文件" class="headerlink" title="生成Ninja工程文件"></a>生成Ninja工程文件</h2><p>WebRTC默认使用Ninja作为编译系统，Ninja工程文件通过GN生成。</p>
+<p>使用如下命令生成默认配置工程（Debug编译，工程文件位于out\Default目录下）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gn gen out/Default</span><br></pre></td></tr></table></figure>
+<p>如果需要Release编译，通过如下命令生成工程文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gn gen out/Default --args=&#x27;is_debug=false&#x27;</span><br></pre></td></tr></table></figure>
+<p>如果想用vscode单步调试，可以用以下命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gn gen out/Default --args=&#x27;is_debug=true rtc_include_tests=false treat_warnings_as_errors=false use_rtti=true is_component_build=false enable_iterator_debugging=false is_clang=false use_sysroot=false  use_custom_libcxx=false use_custom_libcxx_for_host=false  target_os=&quot;linux&quot; target_cpu=&quot;x64&quot;&#x27;</span><br></pre></td></tr></table></figure>
+<p>如果想清理，可以使用下边的命令：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ninja -C out/Default -t clean</span><br></pre></td></tr></table></figure></p>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ninja -C out/Default -t compdb cxx cc &gt; compile_commands.json </span><br></pre></td></tr></table></figure>
+<p><code>-t compdb cxx cc &gt; compile_commands.json</code>是用来生成<code>compile_commands.json</code>进行语法高亮跳转的。</p>
+<p>编译报错如下：</p>
+<p><img src="02.png" alt="p2"></p>
+<p>原因是WebRTC源代码下载不完整，需要执行<code>gclient sync</code>重新下载，再执行上边的命令。<br>接着重新按照安装依赖、生成ninja工程文件、编译的流程走就可以了。<code>Intel Xeon Platinum 8383C (160) @ 3.600GHz</code>跑满，编译时长大概1分钟。</p>
+<p>想在vscode进行单步调试，报错如下：</p>
+<p><img src="05.png" alt="p5"></p>
+<p>date_channel_benchmark报错，在third_party中有grpc的源码，目前不知道怎么解决，参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhuxian2009/article/details/129625673">zhuxian2009的博客</a>，暂时不编译，解决方法如下：</p>
+<p>将<code>src/webrtc.gni</code>进行如下修改</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#rtc_enable_grpc = rtc_enable_protobuf &amp;&amp; (is_linux || is_mac)</span><br><span class="line">rtc_enable_grpc = false</span><br></pre></td></tr></table></figure>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://static.kancloud.cn/cnzxo/mediasoup/2122943">WebRTC编译</a><br><a target="_blank" rel="noopener" href="https://blog.jianchihu.net/linux-webrtc-build.html">Linux平台WebRTC编译</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/132818Creator/p/12580064.html">使gclient 报错 To use a proxy in this situation, please supply those settingsin a .boto</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhuxian2009/article/details/129625673">ubuntu编译webrtc并且搭建调试环境</a></p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="http://example.com/2024/01/06/webrtc%E4%B8%8B%E8%BD%BD%E7%BC%96%E8%AF%91/">http://example.com/2024/01/06/webrtc%E4%B8%8B%E8%BD%BD%E7%BC%96%E8%AF%91/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/webrtc/"># webrtc</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/01/06/webrtc%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">webrtc基础知识</a>
+                      
+                        
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

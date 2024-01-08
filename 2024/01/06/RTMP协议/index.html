@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>RTMP协议 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  RTMP协议
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">1月 6, 2024&nbsp;&nbsp;17:48:10</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/RTMP/">RTMP</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <p>TMP是应用层协议，工作在TCP之上，默认端口1935，需要TCP特性来保证消息传输的可靠性。TCP通过三次握手成功建立连接后，RTMP协议还需要客户端和服务端通过RTMP握手协议来建立RTMP Connection，用来协商RTMP版本及进行时间对齐。RTMP Connection上会传输RTMP控制信息，比如SetChunkSize,SetACKWindowSize，CreateStream等。其中CreateStream命令会创建一个Stream链接，用于传输具体的音视频数据和控制这些信息传输的命令信息。RTMP协议以RTMP Message格式传输，为了更好地实现多路复用、分包和信息的公平性，发送端把Message划分为带有MessageID的Chunk，每个Chunk可能是一个单独的Message，也可能是Message的一部分，在接受端会根据chunk中包含的data的长度，messageid和message的长度把chunk还原成完整的Message，从而实现信息的收发。</p>
+<h1 id="握手"><a href="#握手" class="headerlink" title="握手"></a>握手</h1><p><img src="01.png" alt="p1" style="zoom:12%;" /></p>
+<p>C和S都要发送大小固定的3个数据块，满足关系为：</p>
+<ul>
+<li>客户端发送C0 和 C1 开始</li>
+<li>C/S的第2个包都要收到对方第1个包才能发送</li>
+<li>C/S都收到对方的第3个包握手完成</li>
+</ul>
+<p>S收到C0或C1中任意一个就可以向C发送S0和S1了，但是只有在收到了C1才能发送S2。实际中<strong>为了保证握手的身份验证功能的基础上尽量减少通信的次数</strong>，一般是：</p>
+<ul>
+<li>C同时发送C0和C1</li>
+<li>S收到C1后同时发送S0+S1+S2</li>
+<li>C收到S2之后向S发送C2</li>
+</ul>
+<p>C0和S0长度一个字节，表示分别表示各自的RTMP版本号，规范最新定义为3，版本号不一致可能终止交互或者降级。</p>
+<p>C1/S1长度为1536字节。4字节时间戳，用于C/S发送所有后续块的时间起点,可以从0开始，或者其他值，主要用于多路流传输的时间同步。4字节零值，实际传输协议中并未对此进行校验，没啥意义，不为零也可正常传输。1528字节随机数据，<strong>用于区分出其响应C2/S2来自此RTMP连接发起的握手还是其他方发起的握手</strong></p>
+<p>C2/S2长度为1536字节。4字节时间戳是对方C1/S1发来的时间戳，4字节是字节当前的时间戳。1528字节随机数据回显<strong>必须是对方发来的C1/S1包里携带的随机数据</strong>，比如服务端回复的S2中是C1的1528字节随机数据。</p>
+<h1 id="数据传输过程"><a href="#数据传输过程" class="headerlink" title="数据传输过程"></a>数据传输过程</h1><p><img src="02.png" alt="p2" style="zoom:12%;" /></p>
+<p>流程如上图所示。</p>
+<h2 id="建立连接"><a href="#建立连接" class="headerlink" title="建立连接"></a>建立连接</h2><ol>
+<li>C发送命令消息中的连接，请求建立连接</li>
+<li>S收到C请求后，发送确认窗口大小(Window Acknowledgement Size)协议消息，同时连接到C请求的应用程序</li>
+<li>S发送设置带宽协议消息，限制C的输出带宽</li>
+<li>C处理设置带宽协议消息后，发送确认窗口大小(Window Acknowledgement Size)协议消息</li>
+<li>S发送控制消息中的流开始（Stream Begin）</li>
+<li>S发送命令消息中的结果(_result)，通知客户端连接的状态</li>
+</ol>
+<h2 id="建立网络流"><a href="#建立网络流" class="headerlink" title="建立网络流"></a>建立网络流</h2><ol>
+<li>C发送命令消息中的创建流（createStream）</li>
+<li>S发送命令消息中的“结果”(_result)，通知客户端网络流的状态</li>
+</ol>
+<h2 id="推流端推流"><a href="#推流端推流" class="headerlink" title="推流端推流"></a>推流端推流</h2><ol>
+<li>C发送命令消息（publish）表示开始向S推流</li>
+<li>S发送控制消息流开始（StreamBegin）表示准备好接受</li>
+<li>C发送数据消息（Metadata），传递视频名、分辨率等元数据</li>
+<li>C发送音频数据</li>
+<li>C发送设置的chunk size</li>
+<li>S发送命令消息中的结果(_result)，通知客户端网络流的状态</li>
+<li><p>C发送视频数据</p>
+<p> …</p>
+</li>
+</ol>
+<h2 id="播放端拉流"><a href="#播放端拉流" class="headerlink" title="播放端拉流"></a>播放端拉流</h2><p><img src="03.png" alt="p3" style="zoom:30%;" /></p>
+<ol>
+<li>C发送发送命令消息播放play</li>
+<li>S发送传输的chunk的大小</li>
+<li><p>S发送用户控制协议（StreamIsRecorded）通知是否录制流</p>
+</li>
+<li><p>S发送控制消息流开始（StreamBegin）表示开始发送</p>
+</li>
+<li>S发送命令消息onStatus-play reset，通知流当前状态刷新</li>
+<li>S发送命令消息onStatus-play start，通知流当前可以开始播放</li>
+<li>发送音视频数据</li>
+</ol>
+<h1 id="RTMP分块"><a href="#RTMP分块" class="headerlink" title="RTMP分块"></a>RTMP分块</h1><p>RTMP 传输的数据称为Message，包含音视频数据和信令，传输时把Message拆分成Chunk一个一个发送，每个Chunk中带有msid代表所属Message，接受端根据这个id将chunk组装成Message。Chunk默认大小是 128 字节，可通过控制消息Set Chunk Size设置Chunk的最大值，发送端和接受端各自维护一个自己Chunk Size表示发送Chunk的最大值。每个<strong>Chunk</strong>由块基本头chunk Basic Header（1-3字节）、块消息头chunk Message Header（0, 3, 7, 11字节）、块扩展时间戳Extended Timestamp（0/4字节）和块载荷Chunk Data。Basic Header里边有csid，Message Header里边有msid。<strong>csid进行区分的，是某个时间点可能传输的所有并行数据流，可以理解为特定时间点的一种广度。msid区分的，是时间上的连续数据，可以理解为时间顺序上的一种深度。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">+--------------+----------------+--------------------+--------------+ </span><br><span class="line">| Basic Header | Message Header | Extended Timestamp | Chunk Data   | </span><br><span class="line">+--------------+----------------+--------------------+--------------+ </span><br><span class="line">|&lt;--------------      Chunk Header   ---------------&gt;|</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="块基本头Basic-Header"><a href="#块基本头Basic-Header" class="headerlink" title="块基本头Basic Header"></a>块基本头Basic Header</h2><p>Basic Header字段可以是1，2或3字节，包含chunk type(fmt)和<strong>chunk stream id（cs id）</strong>。fmt定义message header的格式类型。Basic Header大小由cs id决定。协议支持到65597，streamid的范围是3-65599。cs id中0，1，2是保留的，用来表示basic header用几个字节表示。0定义id为两个字节，1定义3个字节。2表示底层协议的控制消息和命令。</p>
+<p>1个字节时候，后6个比特表示csid，范围为0-63，其中的0，1，2是保留的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0 1 2 3 4 5 6 7 </span><br><span class="line">+-+-+-+-+-+-+-+-+ </span><br><span class="line">|fmt|   cs id   | </span><br><span class="line">+-+-+-+-+-+-+-+-+</span><br><span class="line">Chunk basic header 1</span><br></pre></td></tr></table></figure>
+<p>2个字节的时候，cs id中的0表示2字节的Basic Header，第二个字节的8bit组成cs id，8bit数字的范围为0-255，加上1字节中6个bit的64个cs id，所以2字节的cs id为64-319。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"> 0               1</span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|fmt|     0     |   cs id - 64  | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">	   Chunk basic header 2</span><br></pre></td></tr></table></figure>
+<p>3个字节的时候，cs id中的1表示3字节的Basic Header.第2，3个字节的16bit组成cs id，16bit表示的数字的范围为0-65535，加上1字节时候的64个cs id，所以3字节basic header能够表示的cs id范围为3-65599共65597个。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"> 0               1               2</span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|fmt|     1     |         cs id - 64            | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">			Chunk basic header 3</span><br></pre></td></tr></table></figure>
+<h2 id="块消息头Message-Header"><a href="#块消息头Message-Header" class="headerlink" title="块消息头Message Header"></a>块消息头Message Header</h2><p>Message Header包含了要发送的实际信息（可能是完整的，也可能是一部分）的描述信息，格式由basic header中的fmt字段定义。fmt用2bit表示，分别表示11，7，3，0字节共4种类型的Message Header。第一种格式可以表示其他三种表示的所有数据，但其他三种格式是基于对之前chunk的差量化的表示，可以更简洁地表示相同的数据，<strong>实际使用应该采用尽量少的字节表示相同意义的数据</strong>。</p>
+<p>Type 0长11字节，必须是在chunk stream的最开始或者每次当chunk stream的时间戳后退的时候（例如向后拖动的操作）使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2              3               </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|                timestamp                      |message length | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|     message length (cont)     |message type id| msg stream id | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|             message stream id (cont)          | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">					Chunk Message Header - Type 0</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>timestamp (3 bytes): 对于type-0的chunk，消息使用绝对时间戳。时间戳最大0xFFFFFF，大于等于0xFFFFF时候取0xFFFFF，并且设置扩展时间戳Extended Timestamp来<strong>一起表示32位的时间戳</strong>。接受端会判断timestamp值为0xFFFFFF时取出Extended timestamp中数据解析实际的时间戳</p>
+</li>
+<li><p>message length（3 bytes）：表示实际发送的<strong>消息的数据长</strong>，如音频帧、视频帧等数据的长度，<strong>这里是Message的长度，也就是chunk属于的Message的总数据长度，而不是chunk本身Data的数据的长度</strong></p>
+</li>
+</ul>
+<ul>
+<li><p>message type id(1 byte)：消息的类型id，表示实际发送的数据的类型，如8代表音频数据、9代表视频数据。</p>
+</li>
+<li><p><strong>msg stream id(4 bytes)</strong>：表示该chunk所在的流的ID，采用小端存储</p>
+</li>
+</ul>
+<p>Type 1 占7字节。不包含4字节的message stream ID，表示此chunk和上一次发的chunk所在的流相同，在发送端只和对端有一个流链接的时候可以尽量去采取这种格式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2               3               </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|                timestamp delta                |message length | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|      message length (cont)    |message type id| </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">			Chunk Message Header - Type 1</span><br></pre></td></tr></table></figure>
+<p>Type 2长3字节。与前一个chunk有相同的msg stream id和msg length。传输固定大小消息的流(如音频数据格式)，应该用这个类型，作为第二个stream的chunk报文。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2                           </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|                timestamp delta                | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">		Chunk Message Header - Type 2</span><br></pre></td></tr></table></figure>
+<p>type 3 表示这个chunk的msg Header和上一个完全相同。一条msg被分割成多个chunk，除了第1个chunk，剩下所有的chunk都应该用type 3。</p>
+<h2 id="扩展时间戳Extended-Timestamp"><a href="#扩展时间戳Extended-Timestamp" class="headerlink" title="扩展时间戳Extended Timestamp"></a>扩展时间戳Extended Timestamp</h2><p>type 0的timestamp或者type 1，type 2的timestamp delta不能够用24bit即3字节来表示，最近的type 0,1,2的chunk这个字段有值的时候，type 3的也应该有值。</p>
+<h2 id="实际数据消息"><a href="#实际数据消息" class="headerlink" title="实际数据消息"></a>实际数据消息</h2><p>实际应用中遵循使用数最少的原则</p>
+<h3 id="一条msg一个chunk"><a href="#一条msg一个chunk" class="headerlink" title="一条msg一个chunk"></a>一条msg一个chunk</h3><figure style="text-align: center;">
+  <img src="01.png" alt="p1" style="zoom:12%;">
+  <figcaption>固定消息</figcaption>
+</figure>
+
+
+<figure style="text-align: center;">
+  <img src="05.png" alt="p5" style="zoom:20%;" />
+  <figcaption>单msg单chunk</figcaption>
+</figure>
+
+
+<p>4条固定的msg，每个msg都不需要分chunk，所以一条msg一个chunk。长度相等，可以假设csid=3是一条音频流。</p>
+<p>csid=3所以每个chunk的Basic Header都只需要1字节。</p>
+<p>msid, msg typeID, msg length都相等。第一个chunk可以是type 0的msg header，11字节。后边的chunk的timestamp delta都是固定的20，所以第二个chunk可以是type 2的msg header。再后边两个chunk所有的数据都是重复的，使用type 3的msg header。</p>
+<p>时间戳1000不需要进行扩展，所以Extended Timestamp占0字节。</p>
+<p>综上，第1个chunk，需要为1+11+32共44字节。第2个chunk，需要1+3+32共36字节。第3/4个chunk，需要1+32共33字节。</p>
+<h3 id="一条msg多个chunk"><a href="#一条msg多个chunk" class="headerlink" title="一条msg多个chunk"></a>一条msg多个chunk</h3><figure style="text-align: center;">
+  <img src="06.png" alt="p6" style="zoom:25%;" />
+  <figcaption>msg分块</figcaption>
+</figure>
+
+
+<figure style="text-align: center;">
+  <img src="07.png" alt="p7" style="zoom:25%;" />
+  <figcaption>单msg多chunk</figcaption>
+</figure>
+
+
+
+<p>1条msg大于128就需要分成128大小的块。假设csid=4是一个视频，所以每个chunk的Basic Header都只需要1字节。</p>
+<p>这里是一个msg分成多个chunk，所以chunk的Message Header部分都是相同的，只需要第一个chunk用type 0的Message Header，剩下的可以都只用type 3的。时间戳1000不需要进行扩展，所以Extended Timestamp占0字节。</p>
+<p>综上，307字节的msg共分成3个chunk。第一个chunk，需要1+11+128共140字节。第二个chunk，需要1+128共129字节。第三个chunk，需要1+51共52字节。</p>
+<h1 id="MSG格式"><a href="#MSG格式" class="headerlink" title="MSG格式"></a>MSG格式</h1><p>RTMP消息由消息头和负载组成。RTMP消息的头（RTMP Message Header，不是chunk头中的 Message Header，两个不是同一个东西）有自己的统一格式，这部分也会被切割到 Chunk 里传输的，但是实际意义和 Chunk Header 内容重复，当前主流流媒体服务器在发送RTMP消息时，chunk data中不包含RTMP Message Header，只要双方约定好即可。</p>
+<p>msg 头格式如下，除了msg type，剩下3种类型数据都用大端字节序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2               3               </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|  Message Type |               Payload length                  |</span><br><span class="line">|    (1 byte)   |                (3 bytes)                      |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                          Timestamp                            |</span><br><span class="line">|                          (4 bytes)                            |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                Stream ID                      |</span><br><span class="line">|                (3 bytes)                      |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>msg type中的1，2，3，5，6是协议控制消息，4是用户控制消息。8-9用于传输音视频数据，15-20的消息用于发送AMF编码的命令，负责用户与服务器之间的交互，比如播放，暂停剩下</p>
+<h2 id="协议控制消息"><a href="#协议控制消息" class="headerlink" title="协议控制消息"></a>协议控制消息</h2><p>协议控制消息msid必须为0，且csid必须为2。协议控制消息在收到后需要即刻处理，时间戳可以忽略。</p>
+<p>设置块大小消息（Message Type=1）。chunk size最大值默认128字节，这个控制消息可以修改chunk最大块大小并通知对方。chunk size最大值每个方向独立维护。设置块大小消息载荷格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2               3               </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|0|                    chunk size (31 bits)                     | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>规定第一位必须为0，chunk size 31比特是新的最大块大小值，接下来的chunk都以这个chunk size作为有效尺寸发送，直到新的Set Chunk Size消息过来。</p>
+<p>终止消息（Message Type=2），负载是csid。用于通知对端，如果正在等待一条消息的部分块(已经接收了一部分)，那么可以丢弃之前已经接收到的块。对端将接收到的csid作为当前协议控制消息的有效负载。应用程序应该在关闭的时候发送这个消息，表示不需要进一步对这个消息的处理了。终止消息载荷为4字节的csid，该csid已经被接收的消息会被丢齐。</p>
+<p>确认消息（Message Type=3）。客户端或者服务器在接收到等同于窗口大小的字节之后必须发送给对端一个确认消息。窗口大小是指发送者在没有收到接收者确认消息之前发送的最大字节数。这个消息定义了序列号，也就是到目前为止接收到的字节数。确认消息载荷为4字节的目前为止接收到的字节数（sequence number）。</p>
+<p>确认窗口大小消息（Message Type=5）。客户端或服务端发送本消息来通知对方发送确认消息的窗口大小。例如，服务端希望每当发送的字节数等于窗口大小时从客户端收到确认。服务端在成功处理了客户端的连接请求后向客户端更新窗口大小。确认窗口大小消息载荷为4字节的确认窗口的大小。</p>
+<ol>
+<li>设置对端带宽消息（Message Type=6）。客户端或服务端发送这个消息限制等端的发送带宽。如果这个消息与上一次对端发送过来的大小不一样，需要发送一个<strong>确认窗口大小消息。</strong></li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> 0               1               2               3               </span><br><span class="line"> 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|                  Acknowledgement Window size                  | </span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ </span><br><span class="line">|    Limit Type |</span><br><span class="line">+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>Limit Type的类型：</p>
+<ul>
+<li>0 - Hard: 对端必须按提供的带宽发送数据</li>
+<li>1 - Soft: 对端应该限制其出口带宽到消息中的window size，或限制效果更小的带宽。</li>
+<li>2 - Dynamic: 如果前一个Limit Type是Hard，那么就认为这个消息类型是Hard，否则丢弃这个消息。</li>
+</ul>
+<h2 id="用户控制消息（Message-Type-4）"><a href="#用户控制消息（Message-Type-4）" class="headerlink" title="用户控制消息（Message Type=4）"></a>用户控制消息（Message Type=4）</h2><p>用户控制消息包含RTMP流传输层所使用的信息。使用msid=0，csid=2发送。协议控制消息接收立即生效；解析时，时间戳字段被忽略。客户端或者服务器端发送这个消息来通知对端一些用户控制事件，消息承载事件类型和事件数据。</p>
+<p>消息头两个字节是Event Type（实际中是0-7共8种事件），后面跟着Event Data。Event Data的size是可变的。这个消息是需要在rtmp chunk stream上传送的，chunk size最大值的最大值必须能够放下一个用户控制消息。</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="http://example.com/2024/01/06/RTMP%E5%8D%8F%E8%AE%AE/">http://example.com/2024/01/06/RTMP%E5%8D%8F%E8%AE%AE/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/RTMP/"># RTMP</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/01/06/windows%E8%BF%9C%E7%A8%8Bubuntu/">windows远程ubuntu</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6TFB-GCC/">webrtc拥塞控制TFB-GCC</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
