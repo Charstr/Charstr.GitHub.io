@@ -670,7 +670,7 @@ header label {
   width: 45%;
   display: flex;
   align-items: flex-start;
-  margin-top: 2em;
+  margin-top: 1em;
   min-height: 16em;
   padding: 0 2%;
   position: relative;
@@ -680,7 +680,7 @@ header label {
 }
 .tag-cloud-tags {
   margin: 10px 0;
-  padding-top: 2em;
+  padding-top: 1em;
 }
 .tag-cloud-tags a {
   display: inline-block;
@@ -937,6 +937,8 @@ header label {
 }
 .post-copyright {
   margin-top: 1rem;
+  word-break: break-all;
+  word-wrap: break-word;
   border-top: 1px solid #e8e8e8;
   border-bottom: 1px solid #e8e8e8;
 }

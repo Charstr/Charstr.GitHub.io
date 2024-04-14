@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>TWCC扩展RTP和RTCP | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  TWCC扩展RTP和RTCP
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">1月 13, 2024&nbsp;&nbsp;20:04:03</a>
+                          </span>
+                          
+                            
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h1 id="RTP扩展"><a href="#RTP扩展" class="headerlink" title="RTP扩展"></a>RTP扩展</h1><p>RTP报文头如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|V=2|P|X|  CC   |M|     PT      |       sequence number         |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                           timestamp                           |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|           synchronization source (SSRC) identifier            |</span><br><span class="line">+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+</span><br><span class="line">|            contributing source (CSRC) identifiers             |</span><br><span class="line">:                             ....                              :</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>扩展位<code>X</code>表示是否启用扩展。<code>TFB-GCC</code>扩展了RTP头，添加了<strong>传输层序列号transport-wide sequence number</strong>，用于基于session进行反馈统计。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|       0xBE    |    0xDE       |           length=1            |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|  ID   | L=1   |transport-wide sequence number | zero padding  |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>2字节的<code>transport-wide sequence number</code>是传输层序列号，会添加到每个要发送的RTP包，发送端每发送一个RTP包序列号就会累加1。<strong>当发送端发送多路流时，所有流的 RTP 包的该扩展字段都是连续计数的，不会分开独立计数</strong>。该扩展头的作用是为了标识发送的包和反馈的包对应关系，用来进行码率估计；而RTP报文中的序列号是媒体流的序列号，主要用来组帧和抗丢包，同时也用来媒体。</p>
+<h1 id="RTCP扩展"><a href="#RTCP扩展" class="headerlink" title="RTCP扩展"></a>RTCP扩展</h1><p>接收端定期发送的<code>Transport-CC RR</code>报文格式如下：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                2               3</span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|V=2|P|  FMT=15 |    PT=205     |           length              |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                     SSRC of packet sender                     |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                      SSRC of media source                     |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|      base sequence number     |      packet status count      |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|                 reference time                | fb pkt. count |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|          packet chunk         |         packet chunk          |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">.                                                               .</span><br><span class="line">.                                                               .</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|         packet chunk          |  recv delta   |  recv delta   |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">.                                                               .</span><br><span class="line">.                                                               .</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|           recv delta          |  recv delta   | zero padding  |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure></p>
+<p>FMT根据<code>RFC4585</code>定义是应用层反馈消息。</p>
+<p>base sequence number：此反馈中第⼀个数据包的传输范围序列号，该数字不⼀定会随着每个反馈增加，在重新排序的情况下，它可能会减少。</p>
+<p>packet status count：此反馈包含多少个 RTP 数据包的数量，从由基本序列号标识的数据包开始；比如记录的第一个 RTP 包的 transport sequence number 为 base sequence number，那么记录的第二个 RTP 包 transport sequence number 为 base sequence number + 1。</p>
+<p>reference time：表示参考时间，以 64ms 为单位，RTCP 包记录的 RTP 包到达时间信息以这个 reference time 为基准进行计算。此数据包中的第⼀个 recv 增量是相对于参考时间的。即使某些反馈数据包丢失，参考时间也可以计算反馈之间的增量，因为它始终使用相同的时基。</p>
+<p>feedback packets count：用于记录接收端发送的 Transport-wide 反馈包的个数，每发送⼀个反馈数据包，计数器就加一。这个字段可用于检测反馈包是否丢失。</p>
+<p>packet chunk：数据包状态块列表，用来指示数据包到达的状态，指示的 RTP 数据包范围是从基本序列号标识的数据包开始的多个数据包。</p>
+<p>recv delta：对于 packet chunk 中的“packet received”状态的包，也就是收到的 RTP 包，在 recv delta 列表中添加对应的的到达时间间隔信息，用于记录 RTP 包到达时间信息。通过前面的基整时间以及 recv delta，发送端可以计算出该 RTP 包在接收端的到达时间。</p>
+<p>base sequence number:2字节，TransportFeedback包中记录的第一个RTP包的transport sequence number，在反馈的各个TransportFeedback RTCP包中，这个字段不一定是递增的，也有可能比之前的RTCP包小<br>packet status count:2字节，表示这个TransportFeedback包记录了多少个RTP包信息，这些RTP的transport sequence number以base sequence number为基准<br>，比如记录的第一个RTP包的transport sequence number为base sequence number，那么记录的第二个RTP包transport sequence number为base sequence number+1</p>
+<p>reference time:3字节，表示参考时间，以64ms为单位，RTCP包记录的RTP包到达时间信息以这个reference time为基准进行计算<br>feedback packet count:1字节，用于计数发送的每个TransportFeedback包，相当于RTCP包的序列号。可用于检测TransportFeedback包的丢包情况<br>packet chunk:2字节，记录RTP包的到达状态，记录的这些RTP包transport sequence number通过base sequence number计算得到<br>recv delta: 8bits，对于”packet received”状态的包，也就是收到的RTP包，在recv delta列表中添加对应的的到达时间间隔信息，用于记录RTP包到达时间信息。通过前面的reference time以及recv delta信息，我们就可以得到RTP包到达时间</p>
+<p>接收到的包seq和包的接收时间</p>
+<p>丢失的包seq</p>
+<p>SSRC of media source: 32 bits The synchronization source identifier of the media source that this piece of feedback information is related to. TODO: This is transport wide, do we just pick any of the media source SSRCs? - 这个反馈消息包对应的媒体流的同步源标识，这个值待确定，因为这是一个传输通道范围的反馈，这个值必要性不大，可以随意选取一个 media SSRC base sequence number: 16 bits The transport-wide sequence number of the first packet in this feedback. This number is not necessarily increased for every feedback; in the case of reordering it may be decreased. - 该 fb 包首个 rtp 包的 transport seq，非 rtp 包序列号。 packet status count: 16 bits The number of packets this feedback contains status for, starting with the packet identified by the base sequence number. - 该 fb packet 包含 rtp 包个数。 reference time: 24 bits Signed integer indicating an absolute reference time in some (unknown) time base chosen by the sender of the feedback packets. The value is to be interpreted in multiples of 64ms. The first recv delta in this packet is relative to the reference time. The reference time makes it possible to calculate the delta between feedbacks even if some feedback packets are lost, since it always uses the same time base. - 参考时间，fb 包首个 rtp 的到达时间/64 feedback packet count: 8 bits A counter incremented by one for each feedback packet sent. Used to detect feedback packet losses. - 已发送 feedback 包计数器，可用于 fb packet 丢失检测 packet chunk: 16 bits A list of packet status chunks. These indicate the status of a number of packets starting with the one identified by base sequence number. See below for details. <strong> - 描述 rtp 包 4 种状态（见：4.2），有 Run Length Chunk 和 Status Vector Chunk 两种格式</strong> recv delta: 8 bits For each “packet received” status, in the packet status chunks, a receive delta block will follow. See details below. - 当 rtp 包的状态为 Packet received，通过 recv delta 记录其与前一个 rtp 包到达的时间间隔。</p>
+<p>base sequence number：记录要反馈的第一个 RTP 包的 transport-wide sequence number</p>
+<p>packet status count：该反馈报文包含了多少个 RTP 包的到达状态</p>
+<p>reference time：接收端反馈报文的第一个包接收的基准时间（24bit），其值单位为 64ms</p>
+<p>fb pkt.count：反馈报文发送的数量，相当于 RTCP RTPFB 报文的序号</p>
+<p>packet chunk：记录发送端发送的 RTP 包的到达状态，该结构根据第 0 位的值可以表示为 Run length chunk 和 Status vector chunk</p>
+<p>解析这个报文能得到<br>接收到的包seq和包的接收时间</p>
+<p>丢失的包seq</p>
+<font color = 'red'> 待更新</font>
+
+<p>Run length chunk 结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                </span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|T| S |       Run Length        |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>Status vector chunk 结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> 0              1                </span><br><span class="line"> 0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br><span class="line">|T|S|       symbol list         |</span><br><span class="line">+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</span><br></pre></td></tr></table></figure>
+<p>Rtp Packet Status 包的状态 (Packet Status) 表示为 2 个比特的符号： 00 Packet not received （包未收到） 01 Packet received, small delta （包收到，间隔时间很小 ） 10 Packet received, large or negative delta（ 包收到，间隔时间很大或者为负数） 11 [Reserved], packet received, w/o recv delta (包收到了，但是没有间隔时间)</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/01/13/TWCC%E6%89%A9%E5%B1%95RTP%E5%92%8CRTCP/">https://charstr.github.io/2024/01/13/TWCC%E6%89%A9%E5%B1%95RTP%E5%92%8CRTCP/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/01/18/Webrtc%E5%B8%A6%E5%AE%BD%E4%BC%B0%E8%AE%A1/">Webrtc带宽估计</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/01/12/Webrtc%E5%88%86%E6%9E%90%EF%BC%9A%E5%8E%9F%E7%90%86%E3%80%81%E6%A0%87%E5%87%86%E4%B8%8E%E5%AE%9E%E7%8E%B0/">Webrtc分析：原理、标准与实现</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

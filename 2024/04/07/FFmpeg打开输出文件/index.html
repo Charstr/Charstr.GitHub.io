@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg打开输出文件 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg打开输出文件
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 7, 2024&nbsp;&nbsp;19:51:11</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h2 id="of-open函数"><a href="#of-open函数" class="headerlink" title="of_open函数"></a>of_open函数</h2><ol>
+<li>open_files实现了遍历每一个输出文件，of_open函数对每个输出文件进行处理。</li>
+<li><p>mux_alloc给复用器Muxer分配内存。<strong>新版的ffmpeg中，OutputFile和InputFile封装在了Muxer和Demuxer中。</strong></p>
+</li>
+<li><p><strong>录制时间-t和停止时间-to的处理</strong>。1）同时设置了-to stop_time和-t recording_time，使用录制时间，忽略停止时间-to；2）只设置了停止时间，-to结束时间和-ss起始时间（没有指定-ss就是0）和的差就是录制时间（-t）。</p>
+</li>
+<li><p>设置复用器thread_queue_size的大小，没有指定默认为8。<strong>avformat_alloc_output_context2申请编码格式上下文AVFormatContext内存</strong>，并赋值给Muxer中的变量 AVFormatContext *fc。</p>
+</li>
+<li><p><strong>create_streams创建这个输出文件的所有输出流，包括视频、音频、字幕等。</strong></p>
+</li>
+<li><p>遍历每个输出流，调用<strong>init_simple_filtergraph函数</strong>，初始化简单滤镜。</p>
+</li>
+<li><p><strong>avio_open2打开输出文件</strong>，process_forced_keyframes强制关键帧，setup_sync_queues设置同步队列</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">of_open</span><span class="params">(<span class="type">const</span> OptionsContext *o, <span class="type">const</span> <span class="type">char</span> *filename)</span> </span>&#123;</span><br><span class="line">  Muxer *mux;</span><br><span class="line">  AVFormatContext *oc;</span><br><span class="line">  <span class="type">int</span> err;</span><br><span class="line">  OutputFile *of;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 录制时间和停止时间</span></span><br><span class="line">  <span class="type">int64_t</span> recording_time = o-&gt;recording_time; <span class="comment">// -t</span></span><br><span class="line">  <span class="type">int64_t</span> stop_time = o-&gt;stop_time;           <span class="comment">// -to</span></span><br><span class="line">  <span class="comment">// 分配内存</span></span><br><span class="line">  mux = <span class="built_in">mux_alloc</span>();</span><br><span class="line">  of = &amp;mux-&gt;of;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果同时设置了停止时间和录制时间,使用录制时间</span></span><br><span class="line">  <span class="keyword">if</span> (stop_time != INT64_MAX &amp;&amp; recording_time != INT64_MAX) &#123;</span><br><span class="line">    stop_time = INT64_MAX;</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_WARNING,</span><br><span class="line">           <span class="string">&quot;-t and -to cannot be used together; using -t.\n&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果只设置了停止时间,计算录制时间</span></span><br><span class="line">  <span class="keyword">if</span> (stop_time != INT64_MAX &amp;&amp; recording_time == INT64_MAX) &#123;</span><br><span class="line">    <span class="type">int64_t</span> start_time = o-&gt;start_time == AV_NOPTS_VALUE ? <span class="number">0</span> : o-&gt;start_time;</span><br><span class="line">    <span class="keyword">if</span> (stop_time &lt;= start_time) &#123;</span><br><span class="line">      <span class="built_in">av_log</span>(mux, AV_LOG_ERROR, <span class="string">&quot;-to value smaller than -ss; aborting.\n&quot;</span>);</span><br><span class="line">      <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      recording_time = stop_time - start_time;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置录制时间</span></span><br><span class="line">  of-&gt;recording_time = recording_time;</span><br><span class="line">  of-&gt;start_time = o-&gt;start_time;</span><br><span class="line">  of-&gt;shortest = o-&gt;shortest;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置muxer缓冲队列的大小，这里是输出</span></span><br><span class="line">  mux-&gt;thread_queue_size = o-&gt;thread_queue_size &gt; <span class="number">0</span> ? o-&gt;thread_queue_size : <span class="number">8</span>;</span><br><span class="line">  mux-&gt;limit_filesize = o-&gt;limit_filesize;</span><br><span class="line">  <span class="comment">// 复制格式选项</span></span><br><span class="line">  <span class="built_in">av_dict_copy</span>(&amp;mux-&gt;opts, o-&gt;g-&gt;format_opts, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(filename, <span class="string">&quot;-&quot;</span>))</span><br><span class="line">    filename = <span class="string">&quot;pipe:&quot;</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 分配输出上下文</span></span><br><span class="line">  err = <span class="built_in">avformat_alloc_output_context2</span>(&amp;oc, <span class="literal">NULL</span>, o-&gt;format, filename);</span><br><span class="line">  <span class="keyword">if</span> (!oc) &#123;</span><br><span class="line">    <span class="built_in">print_error</span>(filename, err);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  mux-&gt;fc = oc;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 添加日志名称</span></span><br><span class="line">  <span class="built_in">av_strlcat</span>(mux-&gt;log_name, <span class="string">&quot;/&quot;</span>, <span class="built_in">sizeof</span>(mux-&gt;log_name));</span><br><span class="line">  <span class="built_in">av_strlcat</span>(mux-&gt;log_name, oc-&gt;oformat-&gt;name, <span class="built_in">sizeof</span>(mux-&gt;log_name));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 是否需要SDP</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">strcmp</span>(oc-&gt;oformat-&gt;name, <span class="string">&quot;rtp&quot;</span>))</span><br><span class="line">    want_sdp = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  of-&gt;format = oc-&gt;oformat;</span><br><span class="line">  <span class="keyword">if</span> (recording_time != INT64_MAX)</span><br><span class="line">    oc-&gt;duration = recording_time;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 中断回调函数</span></span><br><span class="line">  oc-&gt;interrupt_callback = int_cb;</span><br><span class="line">  <span class="comment">// 处理比特精度标志</span></span><br><span class="line">  <span class="keyword">if</span> (o-&gt;bitexact) &#123;</span><br><span class="line">    oc-&gt;flags |= AVFMT_FLAG_BITEXACT;</span><br><span class="line">    of-&gt;bitexact = <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    of-&gt;bitexact =</span><br><span class="line">        <span class="built_in">check_opt_bitexact</span>(oc, mux-&gt;opts, <span class="string">&quot;fflags&quot;</span>, AVFMT_FLAG_BITEXACT);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create all output streams for this file */</span></span><br><span class="line">  <span class="comment">// 创建输出流，里边有旧版本open_output_file的相关函数功能</span></span><br><span class="line">  <span class="comment">// new_video_stream,new_audio_stream添加输出视频音频流</span></span><br><span class="line">  <span class="built_in">create_streams</span>(mux, o);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* check if all codec options have been used */</span></span><br><span class="line">  <span class="comment">// 检查编码选项是否都被使用</span></span><br><span class="line">  <span class="built_in">validate_enc_avopt</span>(mux, o-&gt;g-&gt;codec_opts);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* set the decoding_needed flags and create simple filtergraphs */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化简单滤镜，因为只有一个输入输出，只需要遍历单个文件的所有流，设置解码标志和创建简单的滤波器图</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; of-&gt;nb_streams; i++) &#123;</span><br><span class="line">    OutputStream *ost = of-&gt;streams[i];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;enc_ctx &amp;&amp; ost-&gt;ist) &#123;</span><br><span class="line">      InputStream *ist = ost-&gt;ist;</span><br><span class="line">      ist-&gt;decoding_needed |= DECODING_FOR_OST;</span><br><span class="line">      ist-&gt;processing_needed = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (ost-&gt;st-&gt;codecpar-&gt;codec_type == AVMEDIA_TYPE_VIDEO ||</span><br><span class="line">          ost-&gt;st-&gt;codecpar-&gt;codec_type == AVMEDIA_TYPE_AUDIO) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">        初始化简单滤镜，只是对滤镜进行了基础的初始化，创建了 输入</span></span><br><span class="line"><span class="comment">        InputFilter，输出 OutputFilter 的内存， 但是里面的 AVFilterContext</span></span><br><span class="line"><span class="comment">        *filter 还是 NULL。当执行完configure_filtergraph之后，InputFilter 的</span></span><br><span class="line"><span class="comment">        filter 就指向了有效的内存，不是NULL。而且所有的输入输出滤镜都通过</span></span><br><span class="line"><span class="comment">        avfilter_link() 链接起来了</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="comment">// 但是！复杂滤镜和简单滤镜只会初始化一个</span></span><br><span class="line">        err = <span class="built_in">init_simple_filtergraph</span>(ist, ost);</span><br><span class="line">        <span class="keyword">if</span> (err &lt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="built_in">av_log</span>(ost, AV_LOG_ERROR,</span><br><span class="line">                 <span class="string">&quot;Error initializing a simple filtergraph\n&quot;</span>);</span><br><span class="line">          <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ost-&gt;ist) &#123;</span><br><span class="line">      ost-&gt;ist-&gt;processing_needed = <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* set the filter output constraints */</span></span><br><span class="line">    <span class="comment">// 设置filter输出限制</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;filter) &#123;</span><br><span class="line">      <span class="type">const</span> AVCodec *c = ost-&gt;enc_ctx-&gt;codec;</span><br><span class="line">      OutputFilter *f = ost-&gt;filter;</span><br><span class="line">      <span class="keyword">switch</span> (ost-&gt;enc_ctx-&gt;codec_type) &#123;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_VIDEO:</span><br><span class="line">        <span class="comment">// 视频采样率、分辨率、像素格式等</span></span><br><span class="line">        f-&gt;frame_rate = ost-&gt;frame_rate;</span><br><span class="line">        f-&gt;width = ost-&gt;enc_ctx-&gt;width;</span><br><span class="line">        f-&gt;height = ost-&gt;enc_ctx-&gt;height;</span><br><span class="line">        <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;pix_fmt != AV_PIX_FMT_NONE) &#123;</span><br><span class="line">          f-&gt;format = ost-&gt;enc_ctx-&gt;pix_fmt;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          f-&gt;formats = c-&gt;pix_fmts; <span class="comment">// 设置输出的文件格式</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_AUDIO:</span><br><span class="line">        <span class="comment">// 音频采样格式、采样率、声道布局等</span></span><br><span class="line">        <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;sample_fmt != AV_SAMPLE_FMT_NONE) &#123;</span><br><span class="line">          f-&gt;format = ost-&gt;enc_ctx-&gt;sample_fmt;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          f-&gt;formats = c-&gt;sample_fmts;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;sample_rate) &#123;</span><br><span class="line">          f-&gt;sample_rate = ost-&gt;enc_ctx-&gt;sample_rate;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          f-&gt;sample_rates = c-&gt;supported_samplerates;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置输出滤镜的ch_layouts，-ac参数指定</span></span><br><span class="line">        <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;ch_layout.nb_channels) &#123;</span><br><span class="line">          <span class="built_in">set_channel_layout</span>(f, ost);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (c-&gt;ch_layouts) &#123;</span><br><span class="line">          f-&gt;ch_layouts = c-&gt;ch_layouts;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* check filename in case of an image number is expected */</span></span><br><span class="line">  <span class="comment">// 检查文件名是否需要自动编号</span></span><br><span class="line">  <span class="keyword">if</span> (oc-&gt;oformat-&gt;flags &amp; AVFMT_NEEDNUMBER) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">av_filename_number_test</span>(oc-&gt;url)) &#123;</span><br><span class="line">      <span class="built_in">print_error</span>(oc-&gt;url, <span class="built_in">AVERROR</span>(EINVAL));</span><br><span class="line">      <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!(oc-&gt;oformat-&gt;flags &amp; AVFMT_NOFILE)) &#123;</span><br><span class="line">    <span class="comment">/* test if it already exists to avoid losing precious files */</span></span><br><span class="line">    <span class="comment">// 检查文件是否存在，以避免覆盖现有文件</span></span><br><span class="line">    <span class="built_in">assert_file_overwrite</span>(filename);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* open the file */</span></span><br><span class="line">    <span class="comment">// 打开文件</span></span><br><span class="line">    <span class="keyword">if</span> ((err = <span class="built_in">avio_open2</span>(&amp;oc-&gt;pb, filename, AVIO_FLAG_WRITE,</span><br><span class="line">                          &amp;oc-&gt;interrupt_callback, &amp;mux-&gt;opts)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">print_error</span>(filename, err);</span><br><span class="line">      <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(oc-&gt;oformat-&gt;name, <span class="string">&quot;image2&quot;</span>) == <span class="number">0</span> &amp;&amp;</span><br><span class="line">             !<span class="built_in">av_filename_number_test</span>(filename))</span><br><span class="line">    <span class="built_in">assert_file_overwrite</span>(filename);</span><br><span class="line">  <span class="comment">// 设置预加载时间和最大延迟</span></span><br><span class="line">  <span class="keyword">if</span> (o-&gt;mux_preload) &#123;</span><br><span class="line">    <span class="built_in">av_dict_set_int</span>(&amp;mux-&gt;opts, <span class="string">&quot;preload&quot;</span>, o-&gt;mux_preload * AV_TIME_BASE, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  oc-&gt;max_delay = (<span class="type">int</span>)(o-&gt;mux_max_delay * AV_TIME_BASE);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* copy metadata and chapters from input files */</span></span><br><span class="line">  <span class="comment">// 复制元数据和章节信息</span></span><br><span class="line">  <span class="built_in">copy_meta</span>(mux, o);</span><br><span class="line">  <span class="comment">// 添加程序信息</span></span><br><span class="line">  <span class="built_in">of_add_programs</span>(mux, o);</span><br><span class="line">  <span class="built_in">of_add_metadata</span>(of, oc, o);</span><br><span class="line"></span><br><span class="line">  err = <span class="built_in">set_dispositions</span>(mux, o);</span><br><span class="line">  <span class="keyword">if</span> (err &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_FATAL, <span class="string">&quot;Error setting output stream dispositions\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// parse forced keyframe specifications;</span></span><br><span class="line">  <span class="comment">// must be done after chapters are created</span></span><br><span class="line">  <span class="comment">// 强制关键帧处理</span></span><br><span class="line">  err = <span class="built_in">process_forced_keyframes</span>(mux, o);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (err &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_FATAL, <span class="string">&quot;Error processing forced keyframes\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 设置同步队列</span></span><br><span class="line">  err = <span class="built_in">setup_sync_queues</span>(mux, oc, o-&gt;shortest_buf_duration * AV_TIME_BASE);</span><br><span class="line">  <span class="keyword">if</span> (err &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_FATAL, <span class="string">&quot;Error setting up output sync queues\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  of-&gt;url = filename;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* write the header for files with no streams */</span></span><br><span class="line">  <span class="comment">// 如果是无流格式,写入header</span></span><br><span class="line">  <span class="keyword">if</span> (of-&gt;format-&gt;flags &amp; AVFMT_NOSTREAMS &amp;&amp; oc-&gt;nb_streams == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="type">int</span> ret = <span class="built_in">mux_check_init</span>(mux);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>init_simple_filtergraph函数分析在<a href="/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/" title="FFmpeg滤镜操作（一）">FFmpeg滤镜操作（一）</a>中。</p>
+<h3 id="create-streams函数"><a href="#create-streams函数" class="headerlink" title="create_streams函数"></a>create_streams函数</h3><ol>
+<li><p>create_streams函数创建了一个输出文件所有的输出流。<strong>对于复杂滤镜，init_complex_filters函数给输入滤镜申请了内存并完成了输入滤镜和滤镜图、输入流的关联赋值；给输出滤镜申请了内存，并完成了输出滤镜和滤镜图的关联赋值，这里调用init_output_filter函数完成了输出滤镜和输出流的关联赋值。</strong>在这个函数实现了某个类型的流复杂滤镜和简单滤镜只能初始化一个的判定条件(存在比如视频是复杂滤镜,音频是简单滤镜)。</p>
+</li>
+<li><p>复杂滤镜的时候, 会遍历所有滤镜图的所有输出滤镜, 根据输出滤镜的媒体类型AVMediaType分别设置auto_disable_x=1(不执行接下来的3.创建流), 然后调用 init_output_filter 函数调用new_xxx_stream(mux, o, NULL)函数创建对应的输出流. <strong>这里没传进去输入视频流，所以复杂滤镜的时候，ost-&gt;ist=NULL.</strong> 接着绑定完成了输出滤镜和输出流的关联赋值。<strong>这里为什么复杂滤镜的时候ost-&gt;ist=NULL来创建？利用这一点，在简单滤镜初始化的时候进行ost-&gt;enc_ctx &amp;&amp; ost-&gt;ist，因为复杂滤镜创建的时候没有指定输入流，所以不会进入简单滤镜的初始化。那跟输入流之间的关系怎么确定？</strong></p>
+</li>
+<li><p>当某个流的滤镜是简单滤镜的时候，if (!auto_disable_x) 才会调用map_audo_xxxx函数遍历所有文件的视频、音频、字幕和数据(同时没有手动指定的流的话)对应的流，根据分数选出最佳的输入流，然后new_xxx_stream(mux, o, best_ist)创建对应的输出流。所以这时候简单滤镜的流满足ost-&gt;ist!=NULL，<strong>复杂滤镜设置了auto_disable_x=1所以这里并不会创建对应流，那简单滤镜为什么ost-&gt;ist!=NULL来创建？</strong> </p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">create_streams</span><span class="params">(Muxer *mux, <span class="type">const</span> OptionsContext *o)</span> </span>&#123;</span><br><span class="line">  AVFormatContext *oc = mux-&gt;fc;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 自动禁用的媒体类型，根据命令行参数决定是否禁用</span></span><br><span class="line">  <span class="type">int</span> auto_disable_v = o-&gt;video_disable;</span><br><span class="line">  <span class="type">int</span> auto_disable_a = o-&gt;audio_disable;</span><br><span class="line">  <span class="type">int</span> auto_disable_s = o-&gt;subtitle_disable;</span><br><span class="line">  <span class="type">int</span> auto_disable_d = o-&gt;data_disable;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create streams for all unlabeled output pads */</span></span><br><span class="line">  <span class="comment">// 简单滤镜的时候这里是0</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; nb_filtergraphs; i++) &#123;</span><br><span class="line">    FilterGraph *fg = filtergraphs[i];</span><br><span class="line">    <span class="comment">// 对于每个输出滤镜</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; fg-&gt;nb_outputs; j++) &#123;</span><br><span class="line">      OutputFilter *ofilter = fg-&gt;outputs[j];</span><br><span class="line">      <span class="comment">// 进行复杂滤镜的一个判断</span></span><br><span class="line">      <span class="keyword">if</span> (!ofilter-&gt;out_tmp || ofilter-&gt;out_tmp-&gt;name)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 根据媒体类型自动禁用相应的流</span></span><br><span class="line">      <span class="keyword">switch</span> (ofilter-&gt;type) &#123;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_VIDEO:</span><br><span class="line">        auto_disable_v = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_AUDIO:</span><br><span class="line">        auto_disable_a = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_SUBTITLE:</span><br><span class="line">        auto_disable_s = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 初始化输出滤镜，这里干什么的</span></span><br><span class="line">      <span class="built_in">init_output_filter</span>(ofilter, o, mux);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 因为复杂滤镜的时候,上边会设置auto_disable_x =</span></span><br><span class="line">  <span class="comment">// 1,所以这里不会运行复杂滤镜对应的流,只有简单滤镜</span></span><br><span class="line">  <span class="keyword">if</span> (!o-&gt;nb_stream_maps) &#123;</span><br><span class="line">    <span class="comment">/* pick the &quot;best&quot; stream of each type */</span></span><br><span class="line">    <span class="comment">// 对每种流选择最佳的</span></span><br><span class="line">    <span class="keyword">if</span> (!auto_disable_v)</span><br><span class="line">      <span class="built_in">map_auto_video</span>(mux, o);</span><br><span class="line">    <span class="keyword">if</span> (!auto_disable_a)</span><br><span class="line">      <span class="built_in">map_auto_audio</span>(mux, o);</span><br><span class="line">    <span class="keyword">if</span> (!auto_disable_s)</span><br><span class="line">      <span class="built_in">map_auto_subtitle</span>(mux, o);</span><br><span class="line">    <span class="keyword">if</span> (!auto_disable_d)</span><br><span class="line">      <span class="built_in">map_auto_data</span>(mux, o);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果有手动映射，根据手动映射选择输出流</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; o-&gt;nb_stream_maps; i++)</span><br><span class="line">      <span class="built_in">map_manual</span>(mux, o, &amp;o-&gt;stream_maps[i]);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">of_add_attachments</span>(mux, o);</span><br><span class="line">  <span class="comment">// 检查是否有输出流，如果没有，输出错误信息并退出</span></span><br><span class="line">  <span class="keyword">if</span> (!oc-&gt;nb_streams &amp;&amp; !(oc-&gt;oformat-&gt;flags &amp; AVFMT_NOSTREAMS)) &#123;</span><br><span class="line">    <span class="built_in">av_dump_format</span>(oc, nb_output_files - <span class="number">1</span>, oc-&gt;url, <span class="number">1</span>);</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_ERROR, <span class="string">&quot;Output file does not contain any stream\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="init-output-filter函数"><a href="#init-output-filter函数" class="headerlink" title="init_output_filter函数"></a>init_output_filter函数</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">init_output_filter</span><span class="params">(OutputFilter *ofilter, <span class="type">const</span> OptionsContext *o,</span></span></span><br><span class="line"><span class="params"><span class="function">                               Muxer *mux)</span> </span>&#123;</span><br><span class="line">  OutputStream *ost;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (ofilter-&gt;type) &#123;</span><br><span class="line">  <span class="keyword">case</span> AVMEDIA_TYPE_VIDEO:</span><br><span class="line">    ost = <span class="built_in">new_video_stream</span>(mux, o, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> AVMEDIA_TYPE_AUDIO:</span><br><span class="line">    ost = <span class="built_in">new_audio_stream</span>(mux, o, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="built_in">av_log</span>(mux, AV_LOG_FATAL,</span><br><span class="line">           <span class="string">&quot;Only video and audio filters are supported &quot;</span></span><br><span class="line">           <span class="string">&quot;currently.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ost-&gt;filter = ofilter; <span class="comment">// 绑定 OutputFilter 与 OutputStream</span></span><br><span class="line"></span><br><span class="line">  ofilter-&gt;ost = ost;</span><br><span class="line">  ofilter-&gt;format = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="map-auto-video函数"><a href="#map-auto-video函数" class="headerlink" title="map_auto_video函数"></a>map_auto_video函数</h4><ol>
+<li><p>遍历所有的文件的所有输入视频流，根据得分比较选出最佳流。1）分辨率乘积为基础分数；2）某个流有新的数据包到达，得分加上100000000；3）某个流是默认流得分再加上5000000；4）该流是附加图片流可以理解为封面（attached picture），分数设置为 1；</p>
+</li>
+<li><p>存在最佳流就调用 new_video_stream函数创建新的视频输出流。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">map_auto_video</span><span class="params">(Muxer *mux, <span class="type">const</span> OptionsContext *o)</span> </span>&#123;</span><br><span class="line">  AVFormatContext *oc = mux-&gt;fc;</span><br><span class="line">  InputStream *best_ist = <span class="literal">NULL</span>; <span class="comment">// 用于存储最佳的输入流</span></span><br><span class="line">  <span class="type">int</span> best_score = <span class="number">0</span>;</span><br><span class="line">  <span class="type">int</span> qcr; <span class="comment">// 查询输出格式是否支持视频编码</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* video: highest resolution */</span></span><br><span class="line">  <span class="comment">// 如果输出是aac类型没法存储视频的，那这里就不会创建新的视频流，就直接返回</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">av_guess_codec</span>(oc-&gt;oformat, <span class="literal">NULL</span>, oc-&gt;url, <span class="literal">NULL</span>, AVMEDIA_TYPE_VIDEO) ==</span><br><span class="line">      AV_CODEC_ID_NONE)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 查询输出格式的视频编码是否支持</span></span><br><span class="line">  qcr = <span class="built_in">avformat_query_codec</span>(oc-&gt;oformat, oc-&gt;oformat-&gt;video_codec, <span class="number">0</span>);</span><br><span class="line">  <span class="comment">// 遍历所有输入文件</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; nb_input_files; j++) &#123;</span><br><span class="line">    InputFile *ifile = input_files[j];</span><br><span class="line">    <span class="comment">// 用于存储当前文件的最佳输入流</span></span><br><span class="line">    InputStream *file_best_ist = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">// 用于存储当前文件的最佳输入流的分数</span></span><br><span class="line">    <span class="type">int</span> file_best_score = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 遍历当前文件的所有流</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; ifile-&gt;nb_streams; i++) &#123;</span><br><span class="line">      InputStream *ist = ifile-&gt;streams[i];</span><br><span class="line">      <span class="type">int</span> score;</span><br><span class="line">      <span class="comment">// 如果流被手动禁用或者不是视频流，则跳过</span></span><br><span class="line">      <span class="keyword">if</span> (ist-&gt;user_set_discard == AVDISCARD_ALL ||</span><br><span class="line">          ist-&gt;st-&gt;codecpar-&gt;codec_type != AVMEDIA_TYPE_VIDEO)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 计算流的分数</span></span><br><span class="line">      score = ist-&gt;st-&gt;codecpar-&gt;width * ist-&gt;st-&gt;codecpar-&gt;height +</span><br><span class="line">              <span class="number">100000000</span> *</span><br><span class="line">                  !!(ist-&gt;st-&gt;event_flags &amp; AVSTREAM_EVENT_FLAG_NEW_PACKETS) +</span><br><span class="line">              <span class="number">5000000</span> * !!(ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_DEFAULT);</span><br><span class="line">      <span class="comment">// 如果是附加图片流，分数设为1</span></span><br><span class="line">      <span class="keyword">if</span> ((qcr != <span class="built_in">MKTAG</span>(<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;P&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;C&#x27;</span>)) &amp;&amp;</span><br><span class="line">          (ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_ATTACHED_PIC))</span><br><span class="line">        score = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 更新最佳输入流</span></span><br><span class="line">      <span class="keyword">if</span> (score &gt; file_best_score) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((qcr == <span class="built_in">MKTAG</span>(<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;P&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;C&#x27;</span>)) &amp;&amp;</span><br><span class="line">            !(ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_ATTACHED_PIC))</span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        file_best_score = score;</span><br><span class="line">        file_best_ist = ist;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果当前文件有最佳输入流</span></span><br><span class="line">    <span class="keyword">if</span> (file_best_ist) &#123;</span><br><span class="line">      <span class="comment">// 如果输出格式要求附加图片流，且当前流不是附加图片流，则跳过</span></span><br><span class="line">      <span class="keyword">if</span> ((qcr == <span class="built_in">MKTAG</span>(<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;P&#x27;</span>, <span class="string">&#x27;I&#x27;</span>, <span class="string">&#x27;C&#x27;</span>)) ||</span><br><span class="line">          !(file_best_ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_ATTACHED_PIC))</span><br><span class="line">        file_best_score -= <span class="number">5000000</span> * !!(file_best_ist-&gt;st-&gt;disposition &amp;</span><br><span class="line">                                        AV_DISPOSITION_DEFAULT);</span><br><span class="line">      <span class="comment">// 更新最佳输入流</span></span><br><span class="line">      <span class="keyword">if</span> (file_best_score &gt; best_score) &#123;</span><br><span class="line">        best_score = file_best_score;</span><br><span class="line">        best_ist = file_best_ist;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 如果存在最佳输入流，则创建新的视频输出流</span></span><br><span class="line">  <span class="keyword">if</span> (best_ist)</span><br><span class="line">    <span class="built_in">new_video_stream</span>(mux, o, best_ist);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="map-auto-audio函数"><a href="#map-auto-audio函数" class="headerlink" title="map_auto_audio函数"></a>map_auto_audio函数</h4><ol>
+<li><p>遍历所有的文件的所有输入音频流，根据得分比较选出最佳流。1）通道数为基础分数；2）某个流有新的数据包到达，得分加上100000000；3）某个流是默认流得分再加上5000000；</p>
+</li>
+<li><p>存在最佳流就调用 new_audio_stream 函数创建新的音频输出流。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">map_auto_audio</span><span class="params">(Muxer *mux, <span class="type">const</span> OptionsContext *o)</span> </span>&#123;</span><br><span class="line">  AVFormatContext *oc = mux-&gt;fc;</span><br><span class="line">  InputStream *best_ist = <span class="literal">NULL</span>;</span><br><span class="line">  <span class="type">int</span> best_score = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* audio: most channels */</span></span><br><span class="line">  <span class="comment">// 如果输出格式不支持音频编码，直接返回</span></span><br><span class="line">  <span class="comment">// 比如说输出YUV没法存储音频，这里就直接return不会创建音频流</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">av_guess_codec</span>(oc-&gt;oformat, <span class="literal">NULL</span>, oc-&gt;url, <span class="literal">NULL</span>, AVMEDIA_TYPE_AUDIO) ==</span><br><span class="line">      AV_CODEC_ID_NONE)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// 遍历所有输入文件</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; nb_input_files; j++) &#123;</span><br><span class="line">    InputFile *ifile = input_files[j];</span><br><span class="line">    InputStream *file_best_ist = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="type">int</span> file_best_score = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 遍历当前文件的所有流</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; ifile-&gt;nb_streams; i++) &#123;</span><br><span class="line">      InputStream *ist = ifile-&gt;streams[i];</span><br><span class="line">      <span class="type">int</span> score;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 如果流被手动禁用或者不是音频流，则跳过</span></span><br><span class="line">      <span class="keyword">if</span> (ist-&gt;user_set_discard == AVDISCARD_ALL ||</span><br><span class="line">          ist-&gt;st-&gt;codecpar-&gt;codec_type != AVMEDIA_TYPE_AUDIO)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="comment">// 计算流的分数</span></span><br><span class="line">      score = ist-&gt;st-&gt;codecpar-&gt;ch_layout.nb_channels +</span><br><span class="line">              <span class="number">100000000</span> *</span><br><span class="line">                  !!(ist-&gt;st-&gt;event_flags &amp; AVSTREAM_EVENT_FLAG_NEW_PACKETS) +</span><br><span class="line">              <span class="number">5000000</span> * !!(ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_DEFAULT);</span><br><span class="line">      <span class="comment">// 更新最佳输入流</span></span><br><span class="line">      <span class="keyword">if</span> (score &gt; file_best_score) &#123;</span><br><span class="line">        file_best_score = score;</span><br><span class="line">        file_best_ist = ist;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (file_best_ist) &#123;</span><br><span class="line">      file_best_score -=</span><br><span class="line">          <span class="number">5000000</span> * !!(file_best_ist-&gt;st-&gt;disposition &amp; AV_DISPOSITION_DEFAULT);</span><br><span class="line">      <span class="keyword">if</span> (file_best_score &gt; best_score) &#123;</span><br><span class="line">        best_score = file_best_score;</span><br><span class="line">        best_ist = file_best_ist;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 有最佳输入流，则创建新的音频输出流</span></span><br><span class="line">  <span class="keyword">if</span> (best_ist)</span><br><span class="line">    <span class="built_in">new_audio_stream</span>(mux, o, best_ist);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="process-forced-keyframes函数"><a href="#process-forced-keyframes函数" class="headerlink" title="process_forced_keyframes函数"></a>process_forced_keyframes函数</h3><h3 id="setup-sync-queues函数"><a href="#setup-sync-queues函数" class="headerlink" title="setup_sync_queues函数"></a>setup_sync_queues函数</h3>
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/07/FFmpeg%E6%89%93%E5%BC%80%E8%BE%93%E5%87%BA%E6%96%87%E4%BB%B6/">https://charstr.github.io/2024/04/07/FFmpeg%E6%89%93%E5%BC%80%E8%BE%93%E5%87%BA%E6%96%87%E4%BB%B6/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/">FFmpeg滤镜操作（一）</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/04/05/FFmpeg%E6%89%93%E5%BC%80%E8%BE%93%E5%85%A5%E6%96%87%E4%BB%B6/">FFmpeg打开输入文件</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

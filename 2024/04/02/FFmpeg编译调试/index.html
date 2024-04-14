@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg编译调试 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg编译调试
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 2, 2024&nbsp;&nbsp;10:44:52</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h1 id="ffmpeg联合x264和x265编译调试"><a href="#ffmpeg联合x264和x265编译调试" class="headerlink" title="ffmpeg联合x264和x265编译调试"></a>ffmpeg联合x264和x265编译调试</h1><ol>
+<li>编译x264<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/home/lcp/env/x264 --enable-static --enable-debug --enable-shared --disable-asm</span><br><span class="line">make -j162</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></li>
+<li><p>使用cmake来构建编译x265。x265开启10bit/12bit支持要在cmake文件把HIGH_BIT_DEPTH打开，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cmake -DCMAKE_INSTALL_PREFIX=/home/lcp/myProj/x265/source/build \</span><br><span class="line">	-DCMAKE_BUILD_TYPE=Debug \</span><br><span class="line">	-DENABLE_SHARED=ON \</span><br><span class="line">	-DENABLE_ASSEMBLY=OFF \</span><br><span class="line">	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译调试ffmpeg</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/home/lcp/myProj/FFmpegLearning/build --enable-static --enable-shared --enable-debug=3 --enable-gpl --enable-libx264 --enable-libx265 --enable-nonfree --disable-stripping --disable-optimizations --disable-asm</span><br><span class="line">make -j162</span><br></pre></td></tr></table></figure></li>
+<li><p>配置环境变量<br>ubuntu服务器的非root用户，在bashrc文件里边添加</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PKG_CONFIG_PATH=/home/lcp/env/x265/lib/pkgconfig:/home/lcp/env/x264/lib/pkgconfig:<span class="variable">$PKG_CONFIG_PATH</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/home/lcp/env/ffmpeg/lib:/home/lcp/env/x265/lib:/home/lcp/env/x264/lib:<span class="variable">$LD_LIBRARY_PATH</span></span><br></pre></td></tr></table></figure>
+<p>然后执行<code>source ~/.bashrc</code></p>
+</li>
+<li><p>卸载</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make uninstall <span class="comment">##删除由make install命令安装的文件</span></span><br><span class="line">make clean <span class="comment">##只删除make时产生的临时文件 </span></span><br><span class="line">make distclean <span class="comment">##同时删除configure和make产生的临时文件</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="部分遇到的问题"><a href="#部分遇到的问题" class="headerlink" title="部分遇到的问题"></a>部分遇到的问题</h1><ol>
+<li><p>重启ssh服务。<br>远程 vscode-server 只会使用它启动时候的环境变量，如果需要刷新环境变量需要重启 vscode-server，可以在本地 vscode 上<code>ctrl+shift+p</code>，执行<code>Remote-SSH: Kill VS Code Server..</code>或者连上 linux 服务器执行  <code>ps -aux | grep code</code></p>
+</li>
+<li><p>自己编译后，动态库不能调试。<br>编译的时候没有添加选项 —disable-stripping导致make install会执行strip命令，去掉FFmpeg的symbols（符号表），所以编译的时候加 —disable-stripping —disable-optimizations —disable-asm 禁止去掉符号表，不优化以及去掉汇编的东西，这样编译的动态库可以调试</p>
+</li>
+<li><p><code>In included file: missing -D__STDC_CONSTANT_MACROS / #define __STDC_CONSTANT_MACROS</code>以及UINT64_C问题。<br>有些说在./configure前边加上<code>CXXFLAGS=-D__STDC_CONSTANT_MACROS</code>或者<code>CFLAGS=-D__STDC_CONSTANT_MACROS</code>，这样编译出来还是会出现这样的问题，目前看到的两种解决办法是在include头文件前边加上宏：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 法1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __STDC_CONSTANT_MACROS</span></span><br><span class="line"><span class="comment">// 法2</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> INT64_C</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INT64_C(c) (c ## LL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> UINT64_C(c) (c ## ULL)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>[build] /usr/bin/ld: cannot find -xxx: No such file or directory<br>自己编译的ffmpeg，在写CMakeLists.txt的时候，没有将link_directories和include_directories命令放置在add_executable前边，会报错/usr/bin/ld: cannot find -xxx: No such file or directory，把add_executable放在link_directories和include_directories命令后边，target_link_libraries前边就可以了。</p>
+</li>
+<li><p>不允许使用不完整的类类型 “struct sigaction”。<br>sigaction是后来在POSIX.1-2001中新增的接口，由于向前兼容的特性，ansi/c99并不支持sigaction函数接口。也就是说，大多数操作系统均支持signal，但是却只有部分支持sigaction。编译器在处理的时候，如果指定了–ansi或者-std=c99的指令后，编译器会认为是编要译一个标准的C程序，那么就在编译时（准确的来说是预处理阶段）通过宏定义，将不符合C标准的地方舍弃掉。解码办法是在<code>#include &lt;signal.h&gt;</code>之后<code>#include &lt;bits/sigaction.h&gt;</code> 然后重新make -j16 &amp; make install。</p>
+</li>
+<li><p>error while loading shared libraries: libavdevice.so.58: cannot open shared object file: No such file or directory。找不到库libavdevice.so.58，但是实际是存在的，手动添加环境变量。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=<span class="string">&quot;/home/lcp/ffmpeg/ffmpeg-x264/lib:<span class="variable">$LD_LIBRARY_PATH</span>&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>srs编译命令参数，</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/home/lcp/myProj/srsLearning/trunk/build --sanitizer=off --sanitizer-static=off --sanitizer-log=off --h265=on</span><br></pre></td></tr></table></figure>
+<p>因为sanitizer安装后有问题所以不开启。<code>bear -- make</code> 会报错：<code>E1222 http_proxy.cc &#39;socks&#39; scheme not supported in proxy URI</code>，把vscode 的ssh服务杀了重新下载再编译就好了。ffmpeg放到trunk文件夹下，因为编译不会生成可执行文件</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/02/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95/">https://charstr.github.io/2024/04/02/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/02/FFmpeg%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90/">FFmpeg命令行参数解析</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/02/20/Webrtc%E5%BA%94%E7%94%A8%E5%8C%BA%E5%9F%9F%E5%8F%97%E9%99%90%E6%8E%A2%E6%B5%8B/">Webrtc应用区域受限探测</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

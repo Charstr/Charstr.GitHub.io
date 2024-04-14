@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg转码操作（三） | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg转码操作（三）
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 13, 2024&nbsp;&nbsp;16:52:55</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h2 id="transcode-step函数"><a href="#transcode-step函数" class="headerlink" title="transcode_step函数"></a>transcode_step函数</h2><ol>
+<li><p>choose_output遍历选择最佳输出流。首先选择没有初始化的输出流，其次是时间戳最小的输出流。接下里要根据输出流选择输入流。这里一些if判断。首先当前输出流关联了滤镜（filter）并且滤镜图的AVFilterGraph *graph不存在，进入这里初始化滤镜图，实际调试不会进入:</p>
+<pre><code> if (ost-&gt;filter &amp;&amp; !ost-&gt;filter-&gt;graph-&gt;graph) &#123;
+     if (ifilter_has_all_input_formats(ost-&gt;filter-&gt;graph)) &#123; 
+         ret = configure_filtergraph(ost-&gt;filter-&gt;graph);
+         if (ret &lt; 0) &#123;
+             av_log(NULL, AV_LOG_ERROR, &quot;Error reinitializing filters!\n&quot;);
+             return ret;
+         &#125;
+     &#125;
+ &#125;
+</code></pre><ol>
+<li>当第一次运行到这里的时候，init_complex_filtergraph初始化复杂滤镜给ost-&gt;filter-&gt;graph-&gt;graph申请内存也已经释放。而简单滤镜并没有申请 AVFilterGraph *graph的内存(在configure_filtergraph函数中实现)。所以会进入这个if。然而，因为所有输入滤镜的format仍未初始值-1，ifilter_has_all_input_formats为假所以最终不会执行configure_filtergraph函数。</li>
+<li>随着程序运行，当解码出一个 AVFrame调ifilter_send_frame函数发给InputFilter的时候，会把InputFilter::format 设置为非 -1 的值，并调用configure_filtergraph创建并配置滤镜图，之后就不再满足ost-&gt;filter &amp;&amp; !ost-&gt;filter-&gt;graph-&gt;graph，所以也不会执行这段代码。</li>
+<li><strong>所以猜测这段代码是多余的？？</strong></li>
+</ol>
+</li>
+<li><p>选择输入流。滤镜图没初始化的时候（实际也是没申请内存，在解码出AVFrame才会申请内存），遍历输入滤镜，优先选择对应的还没有解码出AVFrame的输入流。随着每个输入流解码出了AVFrame，会调用<strong>transcode_from_filter函数选择失败次数最多的入口滤镜</strong>，因为每个入口滤镜绑定了输入流。</p>
+</li>
+<li><p>process_input根据上边的输入流确定对应的输入文件。每次从输入文件读取一个packet给process_input_packet函数处理。返回process_inputAVERROR(EAGAIN)说明已经处理到EOF了，不执行reap_filters(0)，设置ost-&gt;unavailable = 1;</p>
+</li>
+<li><p>reap_filters使用滤镜对解码的帧进行处理，并通过调用 do_video_out/do_audio_out 最后在 write_packet 中执行编码操作。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 0 for success, &lt;0 for error</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">transcode_step</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*-----------选择输入输出流------------------*/</span></span><br><span class="line">  OutputStream *ost;</span><br><span class="line">  InputStream *ist = <span class="literal">NULL</span>;</span><br><span class="line">  <span class="type">int</span> ret;</span><br><span class="line">  <span class="comment">// 选择没有初始化且没有输出完毕的流或者是对比选择dts最小的输出流</span></span><br><span class="line">  ost = <span class="built_in">choose_output</span>(); <span class="comment">/* 通过 */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!ost) &#123;</span><br><span class="line">    <span class="comment">// 如果没有输出流，检查是否有EAGAIN错误（没有数据可读），如果是则等待一段时间再继续执行。</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">got_eagain</span>()) &#123;</span><br><span class="line">      <span class="built_in">reset_eagain</span>();</span><br><span class="line">      <span class="built_in">av_usleep</span>(<span class="number">10000</span>);</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 没有更多的输入可以读取，返回AVERROR_EOF表示输入流已经结束。</span></span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_VERBOSE, <span class="string">&quot;No more inputs to read from, finishing.\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> AVERROR_EOF;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">  当前输出流关联了滤镜（filter）并且滤镜图尚未初始化,进入这里初始化滤镜图，实际调试不会进入:</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">  1.当第一次运行到这里的时候，init_complex_filtergraph初始化复杂滤镜给ost-&gt;filter-&gt;graph-&gt;graph申请内存也已经释放。而简单滤镜并没有申请AVFilterGraph</span></span><br><span class="line"><span class="comment">  *graph的内存。所以会进入这个if。</span></span><br><span class="line"><span class="comment">  2.然而，因为所有输入滤镜的format仍未初始值-1，ifilter_has_all_input_formats为假所以最终不会执行configure_filtergraph函数。</span></span><br><span class="line"><span class="comment">  3.</span></span><br><span class="line"><span class="comment">  随着程序运行，当解码出一个AVFrame调ifilter_send_frame函数发给InputFilter的时候，会把InputFilter::format设置为非</span></span><br><span class="line"><span class="comment">  -1的值，并调用configure_filtergraph创建并配置滤镜图，之后就不再满足ost-&gt;filter&amp;&amp;</span></span><br><span class="line"><span class="comment">  !ost-&gt;filter-&gt;graph-&gt;graph，所以也不会执行这段代码。</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (ost-&gt;filter &amp;&amp; !ost-&gt;filter-&gt;graph-&gt;graph) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ifilter_has_all_input_formats(</span><br><span class="line">            ost-&gt;filter-&gt;graph)) &#123; <span class="comment">// 所有InputFilter::format都不等于-1</span></span><br><span class="line">      <span class="comment">// 滤镜链的配置和准备工作，包括滤镜的创建、参数设置、连接等操作</span></span><br><span class="line">      ret = <span class="built_in">configure_filtergraph</span>(ost-&gt;filter-&gt;graph);</span><br><span class="line">      <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR, <span class="string">&quot;Error reinitializing filters!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*-----根据输出流确定输入流-------*/</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// FilterGraph-&gt;AVFilterGraph在configure_filtergraph函数中调用avfilter_graph_alloc分配了内存才会进入这里</span></span><br><span class="line">  <span class="keyword">if</span> (ost-&gt;filter &amp;&amp; ost-&gt;filter-&gt;graph-&gt;graph) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里为什么初始化</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">av_buffersink_get_type</span>(ost-&gt;filter-&gt;filter) == AVMEDIA_TYPE_AUDIO)</span><br><span class="line">      <span class="built_in">init_output_stream_wrapper</span>(ost, <span class="literal">NULL</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据滤镜链中请求失败次数最多的滤镜来确定输入流</span></span><br><span class="line">    <span class="keyword">if</span> ((ret = <span class="built_in">transcode_from_filter</span>(ost-&gt;filter-&gt;graph, &amp;ist)) &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    <span class="keyword">if</span> (!ist)</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ost-&gt;filter) &#123; <span class="comment">// 滤镜图未初始化进入第二个</span></span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; ost-&gt;filter-&gt;graph-&gt;nb_inputs; i++) &#123;</span><br><span class="line">      InputFilter *ifilter = ost-&gt;filter-&gt;graph-&gt;inputs[i];</span><br><span class="line">      <span class="comment">// 在解码器还没有输出frame的时候跑进去的，优先选择那些解码器还没输出frame的输入流。</span></span><br><span class="line">      <span class="keyword">if</span> (!ifilter-&gt;ist-&gt;got_output &amp;&amp;</span><br><span class="line">          !input_files[ifilter-&gt;ist-&gt;file_index]-&gt;eof_reached) &#123;</span><br><span class="line">        ist = ifilter-&gt;ist;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!ist) &#123;</span><br><span class="line">      ost-&gt;inputs_done = <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;          <span class="comment">// 如果输出流没有滤镜</span></span><br><span class="line">    ist = ost-&gt;ist; <span class="comment">// 获取输出流对应的输入流ist</span></span><br><span class="line">    <span class="built_in">av_assert0</span>(ist);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">  根据上边的输入流确定对应的输入文件。每次读取一个packet给process_input_packet函数处理</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  ret = <span class="built_in">process_input</span>(ist-&gt;file_index);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 返回process_inputAVERROR(EAGAIN)说明已经处理到EOF了，不执行reap_filters(0)直接返回</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 关闭入口滤镜，av_buffersink_get_frame_flags或者</span></span><br><span class="line">  <span class="comment">// avfilter_graph_request_oldest就有机会返回 AVERROR_EOF</span></span><br><span class="line">  <span class="keyword">if</span> (ret == <span class="built_in">AVERROR</span>(EAGAIN)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (input_files[ist-&gt;file_index]-&gt;eagain)</span><br><span class="line">      ost-&gt;unavailable = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> ret == AVERROR_EOF ? <span class="number">0</span> : ret;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 使用滤镜对解码的帧进行处理，并通过调用 do_video_out/do_audio_out 最后在</span></span><br><span class="line">  <span class="comment">// write_packet 中执行编码操作 这里正常解码pkt会走到这里，不需要flush。</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">reap_filters</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>configure_filtergraph函数在<a href="/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/" title="FFmpeg滤镜操作（一）">FFmpeg滤镜操作（一）</a>中</p>
+<h3 id="choose-output函数"><a href="#choose-output函数" class="headerlink" title="choose_output函数"></a>choose_output函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> OutputStream *<span class="title">choose_output</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化变量，用于存储最小的时间戳值和对应的输出流</span></span><br><span class="line">  <span class="type">int64_t</span> opts_min = INT64_MAX;</span><br><span class="line">  OutputStream *ost_min = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (OutputStream *ost = <span class="built_in">ost_iter</span>(<span class="literal">NULL</span>); ost; ost = <span class="built_in">ost_iter</span>(ost)) &#123;</span><br><span class="line">    <span class="type">int64_t</span> opts; <span class="comment">// 当前输出流的时间戳</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果输出流有滤镜并且滤镜的最后帧时间戳是有效的，则使用该时间戳</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;filter &amp;&amp; ost-&gt;last_filter_pts != AV_NOPTS_VALUE) &#123;</span><br><span class="line">      opts = ost-&gt;last_filter_pts;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 否则，使用输出流的最后复用时间戳（如果有效），或者设置为INT64_MIN</span></span><br><span class="line">      opts =</span><br><span class="line">          ost-&gt;last_mux_dts == AV_NOPTS_VALUE ? INT64_MIN : ost-&gt;last_mux_dts;</span><br><span class="line">      <span class="comment">// 如果输出流的最后复用时间戳无效，打印调试信息（在开始时如果发生一次是无害的）</span></span><br><span class="line">      <span class="keyword">if</span> (ost-&gt;last_mux_dts == AV_NOPTS_VALUE)</span><br><span class="line">        <span class="built_in">av_log</span>(ost, AV_LOG_DEBUG,</span><br><span class="line">               <span class="string">&quot;cur_dts is invalid [init:%d i_done:%d finish:%d] (this is &quot;</span></span><br><span class="line">               <span class="string">&quot;harmless if it occurs once at the start per stream)\n&quot;</span>,</span><br><span class="line">               ost-&gt;initialized, ost-&gt;inputs_done, ost-&gt;finished);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果输出流未初始化并且未处理完所有输入，则直接返回该输出流</span></span><br><span class="line">    <span class="keyword">if</span> (!ost-&gt;initialized &amp;&amp; !ost-&gt;inputs_done)</span><br><span class="line">      <span class="keyword">return</span> ost-&gt;unavailable ? <span class="literal">NULL</span> : ost;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果输出流未处理完并且当前时间戳小于opts_min，则更新opts_min和ost_min</span></span><br><span class="line">    <span class="comment">// 选择最小时间戳对应的输出流</span></span><br><span class="line">    <span class="keyword">if</span> (!ost-&gt;finished &amp;&amp; opts &lt; opts_min) &#123;</span><br><span class="line">      opts_min = opts;</span><br><span class="line">      ost_min = ost-&gt;unavailable ? <span class="literal">NULL</span> : ost;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> ost_min; <span class="comment">// 返回最小时间戳对应的输出流</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="transcode-from-filter函数"><a href="#transcode-from-filter函数" class="headerlink" title="transcode_from_filter函数"></a>transcode_from_filter函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">transcode_from_filter</span><span class="params">(FilterGraph *graph, InputStream **best_ist)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> i, ret;</span><br><span class="line">  <span class="type">int</span> nb_requests, nb_requests_max = <span class="number">0</span>;</span><br><span class="line">  InputFilter *ifilter;</span><br><span class="line">  InputStream *ist;</span><br><span class="line"></span><br><span class="line">  *best_ist = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// avcodec_receive_frame接受输入pkt解码得到的frame时候返回EOF会导致在process_input_packet</span></span><br><span class="line">  <span class="comment">// 函数中返回调用send_filter_eof关闭入口滤镜，因为入口滤镜已经关闭了，这里就不能从滤镜图中得到最旧的可用帧</span></span><br><span class="line">  <span class="comment">// 所以会返回 AVERROR_EOF</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 两种情况</span></span><br><span class="line">  <span class="comment">// 1. EOF了，传递进 av_buffersrc_add_frame_flags() 函数 的AVFrame 是NULL。</span></span><br><span class="line">  <span class="comment">// 2. 用了 trim 时间裁剪滤镜，到时间了也会返回了 AVERROR_EOF。</span></span><br><span class="line">  ret = <span class="built_in">avfilter_graph_request_oldest</span>(graph-&gt;graph);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (ret &gt;= <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">reap_filters</span>(<span class="number">0</span>); <span class="comment">// 成功读取到帧时，处理滤镜并返回,这里为什么处理?</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 对EOF的处理</span></span><br><span class="line">  <span class="keyword">if</span> (ret == AVERROR_EOF) &#123;</span><br><span class="line">    <span class="comment">// 参数是 1，这里并不会给avcodec_send_frame发送NULL</span></span><br><span class="line">    <span class="comment">// 传NULL pkt 刷新编码器，是 flush_encoders() 函数做的。</span></span><br><span class="line">    ret = <span class="built_in">reap_filters</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置输出流状态 ost-&gt;finished |= ENCODER_FINISHED; 关闭输出流</span></span><br><span class="line">    <span class="comment">// 这里会在need_output函数进行处理跳出while (!received_sigterm)循环</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; graph-&gt;nb_outputs; i++)</span><br><span class="line">      <span class="built_in">close_output_stream</span>(graph-&gt;outputs[i]-&gt;ost);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果读取操作返回 EAGAIN，表示需要更多的输入数据</span></span><br><span class="line">  <span class="keyword">if</span> (ret != <span class="built_in">AVERROR</span>(EAGAIN))</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 遍历所有的输入滤镜</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; graph-&gt;nb_inputs; i++) &#123;</span><br><span class="line">    ifilter = graph-&gt;inputs[i];</span><br><span class="line">    ist = ifilter-&gt;ist; <span class="comment">// 当前滤镜所在处理的输入流</span></span><br><span class="line">    <span class="comment">// 如果输入文件遇到 EAGAIN 错误或者已经到达结尾，跳过该输入流</span></span><br><span class="line">    <span class="keyword">if</span> (input_files[ist-&gt;file_index]-&gt;eagain ||</span><br><span class="line">        input_files[ist-&gt;file_index]-&gt;eof_reached)</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    <span class="comment">// 获取 buffer filter 的失败次数，用于确定最佳的输入流</span></span><br><span class="line">    nb_requests = <span class="built_in">av_buffersrc_get_nb_failed_requests</span>(ifilter-&gt;filter);</span><br><span class="line">    <span class="keyword">if</span> (nb_requests &gt; nb_requests_max) &#123;</span><br><span class="line">      nb_requests_max = nb_requests;</span><br><span class="line">      *best_ist = ist;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!*best_ist)</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; graph-&gt;nb_outputs; i++)</span><br><span class="line">      graph-&gt;outputs[i]-&gt;ost-&gt;unavailable = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="process-input函数"><a href="#process-input函数" class="headerlink" title="process_input函数"></a>process_input函数</h2><ol>
+<li><p>前边已经选择了最佳的输入流以及对应的输出流，这里是从输出流对应的输入文件进行处理。</p>
+</li>
+<li><p>ifile_get_packet函数从输入的文件每次读取一个AVPacket。函数返回AVERROR(EAGAIN)表示要读取更多的pkt，设置ifile-&gt;eagain = 1表示上一次读取返回EAGAIN；返回1表示文件要循环播放，所以就调用decode_flush函数来flush解码器，传入的pkt==NULL, no_eof=1给process_input_packet函数，读取所有解码得到的frame；返回<0如果不是AVERROR_EOF就是发生了错误推出。返回AVERROR_EOF表示处理结束，且不需要重复播放，遍历所有的输入流来flush解码器，传入pkt==NULL, no_eof=0给process_input_packet函数，并设置ifile->eof_reached = 1表示这个输入文件处理完了；返回0表示正常的pkt。</p>
+</li>
+<li><p>如果正常读取到了一个pkt，首先判断是否是第一个数据包，添加全局的附加信息。接着ts_discontinuity_process函数检测和尝试纠正时间戳的不连续性，然后传参数pkt给process_input_packet函数，传入no_eof=0，对pkt进行解码和发送和滤镜链进行处理。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">process_input</span><span class="params">(<span class="type">int</span> file_index)</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 确定了输入文件的索引</span></span><br><span class="line">	InputFile *ifile = input_files[file_index];</span><br><span class="line">	AVFormatContext *is;</span><br><span class="line">	InputStream *ist;</span><br><span class="line">	AVPacket *pkt;</span><br><span class="line">	<span class="type">int</span> ret, i;</span><br><span class="line"></span><br><span class="line">	is = ifile-&gt;ctx;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	从输入文件读取一个pkt,视频的一帧，音频的多帧。</span></span><br><span class="line"><span class="comment">	1. 正常读取返回0，循环播放返回1，</span></span><br><span class="line"><span class="comment">	2.</span></span><br><span class="line"><span class="comment">	输入流帧率控制或者读取速率限制暂时没有可用的包，表示需要更多输入数据返回AVERROR(EAGAIN)继续等待并重试</span></span><br><span class="line"><span class="comment">	3. 返回&lt;0可能是发生错误或者EOF</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 这里边有多线程的操作，对应原始的get_input_packet函数</span></span><br><span class="line">	ret = ifile_get_packet(ifile, &amp;pkt);</span><br><span class="line">	<span class="comment">// EOF的第一个场景，输入文件已经没有packet可以读取，返回AVERROR_EOF</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回AVERROR(EAGAIN)继续等待并重试</span></span><br><span class="line">	<span class="keyword">if</span> (ret == <span class="built_in">AVERROR</span>(EAGAIN)) &#123;</span><br><span class="line">		ifile-&gt;eagain = <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">return</span> ret;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回值1说明文件要循环播放，就要刷新解码器，</span></span><br><span class="line">	<span class="keyword">if</span> (ret == <span class="number">1</span>) &#123;</span><br><span class="line">		<span class="comment">/* the input file is looped: flush the decoders */</span></span><br><span class="line">		<span class="built_in">decode_flush</span>(ifile);</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">AVERROR</span>(EAGAIN);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ret&lt;0, 可能是文件结束或者其他错误</span></span><br><span class="line">	<span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="comment">// 报错了</span></span><br><span class="line">		<span class="keyword">if</span> (ret != AVERROR_EOF) &#123;</span><br><span class="line">			<span class="built_in">print_error</span>(is-&gt;url, ret);</span><br><span class="line">			<span class="keyword">if</span> (exit_on_error)</span><br><span class="line">				<span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 文件EOF的处理。发送一个NULL的AVPacket，刷解码器把所有的AVFrame刷出来</span></span><br><span class="line">		<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; ifile-&gt;nb_streams; i++) &#123;</span><br><span class="line">			ist = ifile-&gt;streams[i];</span><br><span class="line">			<span class="keyword">if</span> (ist-&gt;processing_needed) &#123;</span><br><span class="line">				<span class="comment">// 到这里读取pkt已经EOF了，输入pkt=NULL就是flush解码器缓冲区</span></span><br><span class="line">				<span class="comment">// 返回0表示已经!eof_reached</span></span><br><span class="line">				<span class="comment">// 也就是把解码器的包也全都flush出来，也就是EOF了。</span></span><br><span class="line">				ret = <span class="built_in">process_input_packet</span>(ist, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">				<span class="keyword">if</span> (ret &gt; <span class="number">0</span>)</span><br><span class="line">					<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="comment">/* mark all outputs that don&#x27;t go through lavfi as finished */</span></span><br><span class="line">			<span class="comment">// 标记所有不经过lavfi的输出为已完成</span></span><br><span class="line">			<span class="keyword">for</span> (OutputStream *ost = <span class="built_in">ost_iter</span>(<span class="literal">NULL</span>); ost; ost = <span class="built_in">ost_iter</span>(ost)) &#123;</span><br><span class="line">				<span class="keyword">if</span> (ost-&gt;ist == ist &amp;&amp; (!ost-&gt;enc_ctx || ost-&gt;enc_ctx-&gt;codec_type == AVMEDIA_TYPE_SUBTITLE)) &#123;</span><br><span class="line">					OutputFile *of = output_files[ost-&gt;file_index];</span><br><span class="line">					<span class="built_in">of_output_packet</span>(of, ost-&gt;pkt, ost, <span class="number">1</span>);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		ifile-&gt;eof_reached = <span class="number">1</span>; <span class="comment">// 设置为1表示这个输入文件已经全部处理完了</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">AVERROR</span>(EAGAIN); <span class="comment">// 如果已经读取完所有数据包，返回 EAGAIN</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">reset_eagain</span>();</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 读取的哪个输入流</span></span><br><span class="line">	ist = ifile-&gt;streams[pkt-&gt;stream_index];</span><br><span class="line">	ist-&gt;data_size += pkt-&gt;size;</span><br><span class="line">	ist-&gt;nb_packets++;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (ist-&gt;discard)</span><br><span class="line">		<span class="keyword">goto</span> discard_packet; <span class="comment">// 如果流被丢弃，跳过数据包</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* add the stream-global side data to the first packet */</span></span><br><span class="line">	<span class="comment">/* 将流的全局附加数据添加到第一个数据包 */</span></span><br><span class="line">	<span class="keyword">if</span> (ist-&gt;nb_packets == <span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; ist-&gt;st-&gt;nb_side_data; i++) &#123;</span><br><span class="line">			AVPacketSideData *src_sd = &amp;ist-&gt;st-&gt;side_data[i];</span><br><span class="line">			<span class="type">uint8_t</span> *dst_data;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (src_sd-&gt;type == AV_PKT_DATA_DISPLAYMATRIX)</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">av_packet_get_side_data</span>(pkt, src_sd-&gt;type, <span class="literal">NULL</span>))</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">			dst_data = <span class="built_in">av_packet_new_side_data</span>(pkt, src_sd-&gt;type, src_sd-&gt;size);</span><br><span class="line">			<span class="keyword">if</span> (!dst_data)</span><br><span class="line">				<span class="built_in">report_and_exit</span>(<span class="built_in">AVERROR</span>(ENOMEM));</span><br><span class="line"></span><br><span class="line">			<span class="built_in">memcpy</span>(dst_data, src_sd-&gt;data, src_sd-&gt;size);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// detect and try to correct for timestamp discontinuities</span></span><br><span class="line">	<span class="comment">// 检测和尝试纠正时间戳的不连续性</span></span><br><span class="line">	<span class="built_in">ts_discontinuity_process</span>(ifile, ist, pkt);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从输入文件里面读取出来 AVPacket 的时候</span></span><br><span class="line">	<span class="keyword">if</span> (debug_ts) &#123;</span><br><span class="line">		<span class="built_in">av_log</span>(</span><br><span class="line">			<span class="literal">NULL</span>, AV_LOG_INFO,</span><br><span class="line">			<span class="string">&quot;demuxer+ffmpeg -&gt; ist_index:%d:%d type:%s pkt_pts:%s &quot;</span></span><br><span class="line">			<span class="string">&quot;pkt_pts_time:%s pkt_dts:%s pkt_dts_time:%s duration:%s &quot;</span></span><br><span class="line">			<span class="string">&quot;duration_time:%s off:%s off_time:%s\n&quot;</span>,</span><br><span class="line">			ifile-&gt;index, pkt-&gt;stream_index, <span class="built_in">av_get_media_type_string</span>(ist-&gt;par-&gt;codec_type), <span class="built_in">av_ts2str</span>(pkt-&gt;pts),</span><br><span class="line">			<span class="built_in">av_ts2timestr</span>(pkt-&gt;pts, &amp;ist-&gt;st-&gt;time_base), <span class="built_in">av_ts2str</span>(pkt-&gt;dts),</span><br><span class="line">			<span class="built_in">av_ts2timestr</span>(pkt-&gt;dts, &amp;ist-&gt;st-&gt;time_base), <span class="built_in">av_ts2str</span>(pkt-&gt;duration),</span><br><span class="line">			<span class="built_in">av_ts2timestr</span>(pkt-&gt;duration, &amp;ist-&gt;st-&gt;time_base), <span class="built_in">av_ts2str</span>(input_files[ist-&gt;file_index]-&gt;ts_offset),</span><br><span class="line">			<span class="built_in">av_ts2timestr</span>(input_files[ist-&gt;file_index]-&gt;ts_offset, &amp;AV_TIME_BASE_Q));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">sub2video_heartbeat</span>(ist, pkt-&gt;pts); <span class="comment">// 处理字幕到视频的转换</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 非EOF，正常读取到pkt的调用</span></span><br><span class="line">	<span class="comment">// 调用解码函数</span></span><br><span class="line">	<span class="built_in">process_input_packet</span>(ist, pkt, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">discard_packet:</span><br><span class="line">	<span class="built_in">av_packet_free</span>(&amp;pkt);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="reap-filters函数"><a href="#reap-filters函数" class="headerlink" title="reap_filters函数"></a>reap_filters函数</h2><p>reap_filters函数在<a href="/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/" title="FFmpeg滤镜操作（一）">FFmpeg滤镜操作（一）</a>中分析</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%89%EF%BC%89/">https://charstr.github.io/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%89%EF%BC%89/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E5%9B%9B%EF%BC%89/">FFmpeg转码操作（四）</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%BA%8C%EF%BC%89/">FFmpeg转码操作（二）</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

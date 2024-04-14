@@ -13,7 +13,7 @@
 
 
 
-<title>webrtc拥塞控制REMB-GCC | lly&#39;s Blog</title>
+<title>Webrtc拥塞控制REMB-GCC | lly&#39;s Blog</title>
 
 
 
@@ -265,7 +265,7 @@
             <article class="post-wrap">
               <header class="post-header">
                 <h1 class="post-title">
-                  webrtc拥塞控制REMB-GCC
+                  Webrtc拥塞控制REMB-GCC
                 </h1>
                 
                   <div class="post-meta">
@@ -282,9 +282,11 @@
                               <span class="post-category">
                                 Category:
                                 
-                                  <a href="/categories/webrtc/">webrtc</a>
+                                  <a href="/categories/Webrtc/">Webrtc</a>
                                   
-                                  <a href="/categories/webrtc/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/">拥塞控制</a>
+                                  <a href="/categories/Webrtc/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/">拥塞控制</a>
+                                  
+                                  <a href="/categories/Webrtc/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/BWE/">BWE</a>
                                   
                               </span>
                               
@@ -295,8 +297,8 @@
               <div class="post-content">
                 <p>GCC算法主要分成两个部分，一个是基于丢包的拥塞控制，一个是基于延迟的拥塞控制。该算法有两个版本的实现。</p>
 <ul>
-<li>版本一中，接收端实现基于延迟的拥塞控制算法，发送端实现基于丢包的拥塞控制。称为<code>REMB-GCC</code>。</li>
-<li>版本二中，基于丢包和基于延迟的拥塞控制都在发送端实现，接收端仅定时向发送端反馈收包情况。称为<code>TFB-GCC</code>。</li>
+<li>版本一，接收端实现基于延迟的拥塞控制算法，发送端实现基于丢包的拥塞控制。称为<code>REMB-GCC</code>。</li>
+<li>版本二，基于丢包和基于延迟的拥塞控制都在发送端实现，接收端仅定时向发送端反馈收包情况。称为<code>TFB-GCC</code>。</li>
 </ul>
 <p><img src="01.png" alt="p1" style="zoom:25%;" /></p>
 <p>上图是 REMB-GCC 的算法框图。接收端对延时梯度进行估计，计算预估带宽后通过 REMB RTCP包反馈给发送端；发送端基于丢包率进行带宽评估，最终结合接收端反馈的带宽选择较小值作为最终带宽，用来调整发送端编码器编码带宽，FEC 和 pacing 带宽及重传包的带宽。</p>
@@ -310,15 +312,15 @@
 <li>wifi网络下存在短暂的信道中断现象，造成数据包的堆积，造成数据包burst（爆发式发送）。</li>
 </ul>
 <p>到达时间滤波器的目的是<strong>估计单向时延梯度</strong> <script type="math/tex">m(t_i)</script>，这里采用 kalman 滤波根据<strong>测得的单向时延梯度</strong> <script type="math/tex">d_m(t_i)</script> 估计得到：</p>
-<p><img src="02.png" alt="p2" style="zoom:25%;" /></p>
+<p><img src="02.png" alt="p2" style="zoom:22%;" /></p>
 <p>上图 <script type="math/tex">T(i-1)</script> 和 <script type="math/tex">T(i)</script> 是两个数据帧第一个数据包在发送端发送的时间，<script type="math/tex">t(i-1)</script> 和 <script type="math/tex">t(i)</script> 是两个数据帧最后一个数据包在接收端接收的时间。相邻两帧的接收时间差和发送时间差之间的间隔，也即一帧在网络中传输时间的变化，称为单向延时梯度：</p>
 <script type="math/tex; mode=display">
 d_m(t_i) = (t_i-t_{i-1})-(T_i-T_{i-1}) = (t_i-T_i)-(t_{i-1}-T_{i-1})</script><p>理想的网络传输，<script type="math/tex">d_m(t_i)</script> 应该为 0。如果网络发生拥塞，<script type="math/tex">T_i</script> 时刻发出来的包在网络中因拥塞而排队，被接收端接收需要更长的时间，此时 <script type="math/tex">d_m(t_i)>0</script>。如果 <script type="math/tex">d_m(t_i)>0</script> 且越来越大，说明网络拥塞更严重，如果 <script type="math/tex">d_m(t_i)>0</script> 但是越来越小，说明网络拥塞状况处于好转状态。</p>
-<p>由于延迟梯度的测量精度很小，为了避免网络噪音带来的误差，webrtc利用kalman 滤波（Kalman filter）来平滑延迟梯度的测量结果。直接测量的单向延时梯度（时延差）由以下因素产生：</p>
+<p>由于延迟梯度的测量精度很小，为了避免网络噪音带来的误差，Webrtc利用kalman 滤波（Kalman filter）来平滑延迟梯度的测量结果。直接测量的单向延时梯度（时延差）由以下因素产生：</p>
 <ul>
-<li><p>两连续数据帧大小变化产生的时延 <script type="math/tex">\frac{\Delta L(t_i)}{C(t_i)}</script>， <script type="math/tex">\Delta L(t_i)</script> 表示连续两数据帧大小的变化，<script type="math/tex">C(t_i)</script> 表示接收第 i 帧时刻的链路容量或带宽大小</p>
+<li><p>两连续数据帧大小变化产生的时延 <script type="math/tex">\frac{\Delta L(t_i)}{C(t_i)}</script>，<script type="math/tex">\Delta L(t_i)</script> 表示连续两数据帧大小的变化，<script type="math/tex">C(t_i)</script> 表示接收第 i 帧时刻的链路容量或传输速率大小</p>
 </li>
-<li><p>发送队列排队产生的延时梯度 <script type="math/tex">\mu(t_i)</script> </p>
+<li><p>包组排队产生的延时梯度 <script type="math/tex">\mu(t_i)</script> </p>
 </li>
 <li><p>网络抖动或其他延时 <script type="math/tex">n(t_i)</script></p>
 </li>
@@ -410,7 +412,7 @@ A_s(t_k) = \begin{cases}
                       
                         <p class="copyright-item">
                           <span>Permalink:</span>
-                          <span><a href="http://example.com/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6REMB-GCC/">http://example.com/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6REMB-GCC/</a></span>
+                          <span><a href="https://charstr.github.io/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6REMB-GCC/">https://charstr.github.io/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6REMB-GCC/</a></span>
                         </p>
                         
                           
@@ -429,9 +431,11 @@ A_s(t_k) = \begin{cases}
                       <span class="tag">
                         
                           
-                            <a href="/tags/webrtc/"># webrtc</a>
+                            <a href="/tags/Webrtc/"># Webrtc</a>
                             
                             <a href="/tags/%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6/"># 拥塞控制</a>
+                            
+                            <a href="/tags/BWE/"># BWE</a>
                             
                               
                       </span>
@@ -444,10 +448,10 @@ A_s(t_k) = \begin{cases}
                   </section>
                   <section class="post-nav">
                     
-                      <a class="prev" rel="prev" href="/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6TFB-GCC/">webrtc拥塞控制TFB-GCC</a>
+                      <a class="prev" rel="prev" href="/2024/01/06/webrtc%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6TFB-GCC/">Webrtc拥塞控制TFB-GCC</a>
                       
                         
-                          <a class="next" rel="next" href="/2024/01/06/webrtc%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">webrtc基础知识</a>
+                          <a class="next" rel="next" href="/2024/01/06/webrtc%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">Webrtc基础知识</a>
                           
                   </section>
 

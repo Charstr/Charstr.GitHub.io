@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg转码操作（二） | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg转码操作（二）
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 13, 2024&nbsp;&nbsp;16:35:28</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <p>transcode_init函数进行转码相关的初始化操作，执行转换编码格式，或转换封装格式前的初始化操作，比如帧率计算、缓冲计算、编解码器初始化等，调用了init_input_stream打开解码器示例，初始化输入流，含有音视频的，先音频后视频。</p>
+<h2 id="transcode-init函数"><a href="#transcode-init函数" class="headerlink" title="transcode_init函数"></a>transcode_init函数</h2><ol>
+<li>使用-readrate指定输入文件的读取速度(倍数表示)或者-re 限制 FFmpeg 的读取速度，使其不超过输入文件的帧率。比如1 秒 24 帧的视频，那就是 ffmpeg.exe 会每隔 40 毫秒从输入文件读取一个 AVPacket 进行处理，使其不超过输入文件的帧率。不加-re就是处理完一个 AVPacket立即去读下一个 AVPacket，不会等够 40 毫秒。一个典型的应用场景是直播推流，-re模拟摄像头采集画面的速度。</li>
+<li>调用<strong>init_input_stream初始化输入流</strong>。avcodec_get_name根据名字查找对应的解码器，设置解码器的时间基pkt_timebase为输入流的时间基，设置解码器的线程数，设置硬解设备，<strong>avcodec_open2打开解码器</strong>并传递输入流的解码器参数AVDictionary，初始化输入流的next_pts和next_dts。</li>
+<li><strong>如果只是拷贝而不用进行编解码，直接初始化输出流</strong>。遍历所有的输出流，init_output_stream_wrapper函数调init_output_stream初始化输出流，<strong>打开编码器</strong>，将输出流的标志位initialized=1。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">transcode_init</span><span class="params">(<span class="type">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">  <span class="type">char</span> error[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* init framerate emulation */</span></span><br><span class="line">  <span class="comment">// 初始化帧率模拟</span></span><br><span class="line">  <span class="comment">// 遍历每个输入文件</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; nb_input_files; i++) &#123;</span><br><span class="line">    InputFile *ifile = input_files[i];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用了-readrate指定输入文件的读取速度，以倍数表示或者-re 限制 FFmpeg</span></span><br><span class="line">    <span class="comment">// 的读取速度，使其不超过输入文件的帧率。</span></span><br><span class="line">    <span class="keyword">if</span> (ifile-&gt;readrate || ifile-&gt;rate_emu)</span><br><span class="line">      <span class="comment">// 遍历文件的所有流</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; ifile-&gt;nb_streams; j++)</span><br><span class="line">        ifile-&gt;streams[j]-&gt;start =</span><br><span class="line">            <span class="built_in">av_gettime_relative</span>(); <span class="comment">// 记录流的开始时间（读取pkt）</span></span><br><span class="line">                                   <span class="comment">// ifile_get_packet函数中控制读取pkt的速度</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* init input streams */</span></span><br><span class="line">  <span class="comment">// 遍历所有输入文件的所有输入流，打开解码器示例，初始化输入流</span></span><br><span class="line">  <span class="keyword">for</span> (InputStream *ist = <span class="built_in">ist_iter</span>(<span class="literal">NULL</span>); ist; ist = <span class="built_in">ist_iter</span>(ist))</span><br><span class="line">    <span class="keyword">if</span> ((ret = <span class="built_in">init_input_stream</span>(ist, error, <span class="built_in">sizeof</span>(error))) &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">goto</span> dump_format;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果只拷贝，在这里初始化输出音视频输出流，不进行编解码的过程怎么判断？</span></span><br><span class="line">  <span class="comment">// 而滤镜的模式进行了编解码，需要解码出AVFrame之后，在</span></span><br><span class="line">  <span class="comment">// reap_filter初始化音频输出流，视频输出流在do_video_out函数</span></span><br><span class="line">  <span class="keyword">for</span> (OutputStream *ost = <span class="built_in">ost_iter</span>(<span class="literal">NULL</span>); ost; ost = <span class="built_in">ost_iter</span>(ost)) &#123;</span><br><span class="line">    <span class="comment">// 要编解码的就不执行了</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;enc_ctx &amp;&amp; (ost-&gt;st-&gt;codecpar-&gt;codec_type == AVMEDIA_TYPE_VIDEO ||</span><br><span class="line">                         ost-&gt;st-&gt;codecpar-&gt;codec_type == AVMEDIA_TYPE_AUDIO))</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    ret = <span class="built_in">init_output_stream_wrapper</span>(ost, <span class="literal">NULL</span>, <span class="number">0</span>); <span class="comment">// 初始化输出流</span></span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">goto</span> dump_format;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* discard unused programs */</span></span><br><span class="line">  <span class="comment">// 丢弃未使用的程序</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; nb_input_files; i++) &#123; <span class="comment">// 所有输入文件</span></span><br><span class="line">    InputFile *ifile = input_files[i];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; ifile-&gt;ctx-&gt;nb_programs; j++) &#123; <span class="comment">// 所有输出流</span></span><br><span class="line">      AVProgram *p = ifile-&gt;ctx-&gt;programs[j];</span><br><span class="line">      <span class="type">int</span> discard = AVDISCARD_ALL; <span class="comment">// 默认丢弃所有数据</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; p-&gt;nb_stream_indexes; k++)</span><br><span class="line">        <span class="keyword">if</span> (!ifile-&gt;streams[p-&gt;stream_index[k]]-&gt;discard) &#123;</span><br><span class="line">          discard = AVDISCARD_DEFAULT;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      p-&gt;discard = discard;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// 初始化本地变量outputStream,打印输出，这里一个文件两个输出流</span></span><br><span class="line">  <span class="keyword">for</span> (OutputStream *ost = <span class="built_in">ost_iter</span>(<span class="literal">NULL</span>); ost; ost = <span class="built_in">ost_iter</span>(ost)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;attachment_filename) &#123;</span><br><span class="line">      <span class="comment">/* an attached file */</span></span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO, <span class="string">&quot;  File %s -&gt; Stream #%d:%d\n&quot;</span>,</span><br><span class="line">             ost-&gt;attachment_filename, ost-&gt;file_index, ost-&gt;index);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果是复杂图的输出</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;filter &amp;&amp; !<span class="built_in">filtergraph_is_simple</span>(ost-&gt;filter-&gt;graph)) &#123;</span><br><span class="line">      <span class="comment">/* output from a complex graph */</span></span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO, <span class="string">&quot;  %s&quot;</span>, ost-&gt;filter-&gt;name);</span><br><span class="line">      <span class="keyword">if</span> (nb_filtergraphs &gt; <span class="number">1</span>)</span><br><span class="line">        <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO, <span class="string">&quot; (graph %d)&quot;</span>, ost-&gt;filter-&gt;graph-&gt;index);</span><br><span class="line"></span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO, <span class="string">&quot; -&gt; Stream #%d:%d (%s)\n&quot;</span>, ost-&gt;file_index,</span><br><span class="line">             ost-&gt;index, ost-&gt;enc_ctx-&gt;codec-&gt;name);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO, <span class="string">&quot;  Stream #%d:%d -&gt; #%d:%d&quot;</span>, ost-&gt;ist-&gt;file_index,</span><br><span class="line">           ost-&gt;ist-&gt;st-&gt;index, ost-&gt;file_index, ost-&gt;index);</span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;enc_ctx) &#123;</span><br><span class="line">      <span class="comment">// 获取解码器和编码器的信息</span></span><br><span class="line">      <span class="type">const</span> AVCodec *in_codec = ost-&gt;ist-&gt;dec;</span><br><span class="line">      <span class="type">const</span> AVCodec *out_codec = ost-&gt;enc_ctx-&gt;codec;</span><br><span class="line">      <span class="comment">// ...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">atomic_store</span>(&amp;transcode_init_done, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="init-output-stream函数"><a href="#init-output-stream函数" class="headerlink" title="init_output_stream函数"></a>init_output_stream函数</h3><ol>
+<li>需要编码的，init_output_stream_encode函数初始化输出流的编码器配置，<strong>avcodec_open2打开编码器，</strong>avcodec_parameters_from_context将将编码器上下文的参数复制到输出流的参数中。不需要编码的，init_output_stream_streamcopy进行输出流的初始化。</li>
+<li>of_stream_init初始化输出流，将 ost-&gt;initialized 设置为1。然后mux_check_init检测初始化效果，avformat_write_header写入文件头，接着是多线程的一些操作。</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">init_output_stream</span><span class="params">(OutputStream *ost, AVFrame *frame, <span class="type">char</span> *error,</span></span></span><br><span class="line"><span class="params"><span class="function">                              <span class="type">int</span> error_len)</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// 获取编码器的信息和输入流的信息。</span></span><br><span class="line">  <span class="keyword">if</span> (ost-&gt;enc_ctx) &#123;</span><br><span class="line">    <span class="type">const</span> AVCodec *codec = ost-&gt;enc_ctx-&gt;codec;</span><br><span class="line">    InputStream *ist = ost-&gt;ist;</span><br><span class="line">    <span class="comment">// 初始化输出流的编码器配置</span></span><br><span class="line">    ret = <span class="built_in">init_output_stream_encode</span>(ost, frame);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 编码器配置中没有设置线程数，将线程数设置为自动</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">av_dict_get</span>(ost-&gt;encoder_opts, <span class="string">&quot;threads&quot;</span>, <span class="literal">NULL</span>, <span class="number">0</span>))</span><br><span class="line">      <span class="built_in">av_dict_set</span>(&amp;ost-&gt;encoder_opts, <span class="string">&quot;threads&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果编码器支持重新排序不透明数据，将相应标志设置为 +copy_opaque。</span></span><br><span class="line">    <span class="keyword">if</span> (codec-&gt;capabilities &amp; AV_CODEC_CAP_ENCODER_REORDERED_OPAQUE) &#123;</span><br><span class="line">      ret = <span class="built_in">av_dict_set</span>(&amp;ost-&gt;encoder_opts, <span class="string">&quot;flags&quot;</span>, <span class="string">&quot;+copy_opaque&quot;</span>,</span><br><span class="line">                        AV_DICT_MULTIKEY);</span><br><span class="line">      <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 设置硬件</span></span><br><span class="line">    ret = <span class="built_in">hw_device_setup_for_encode</span>(ost);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">snprintf</span>(error, error_len,</span><br><span class="line">               <span class="string">&quot;Device setup failed for &quot;</span></span><br><span class="line">               <span class="string">&quot;encoder on output stream #%d:%d : %s&quot;</span>,</span><br><span class="line">               ost-&gt;file_index, ost-&gt;index, <span class="built_in">av_err2str</span>(ret));</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 打开编码器</span></span><br><span class="line">    <span class="keyword">if</span> ((ret = <span class="built_in">avcodec_open2</span>(ost-&gt;enc_ctx, codec, &amp;ost-&gt;encoder_opts)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (ret == AVERROR_EXPERIMENTAL)</span><br><span class="line">        <span class="built_in">abort_codec_experimental</span>(codec, <span class="number">1</span>);</span><br><span class="line">      <span class="built_in">snprintf</span>(</span><br><span class="line">          error, error_len,</span><br><span class="line">          <span class="string">&quot;Error while opening encoder for output stream #%d:%d - &quot;</span></span><br><span class="line">          <span class="string">&quot;maybe incorrect parameters such as bit_rate, rate, width or height&quot;</span>,</span><br><span class="line">          ost-&gt;file_index, ost-&gt;index);</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果是音频编码器并且不支持可变帧大小，设置音频帧大小</span></span><br><span class="line">    <span class="keyword">if</span> (codec-&gt;type == AVMEDIA_TYPE_AUDIO &amp;&amp;</span><br><span class="line">        !(codec-&gt;capabilities &amp; AV_CODEC_CAP_VARIABLE_FRAME_SIZE))</span><br><span class="line">      <span class="built_in">av_buffersink_set_frame_size</span>(ost-&gt;filter-&gt;filter,</span><br><span class="line">                                   ost-&gt;enc_ctx-&gt;frame_size);</span><br><span class="line">    <span class="built_in">assert_avoptions</span>(ost-&gt;encoder_opts);</span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;bit_rate &amp;&amp; ost-&gt;enc_ctx-&gt;bit_rate &lt; <span class="number">1000</span> &amp;&amp;</span><br><span class="line">        ost-&gt;enc_ctx-&gt;codec_id !=</span><br><span class="line">            AV_CODEC_ID_CODEC2 <span class="comment">/* don&#x27;t complain about 700 bit/s modes */</span>)</span><br><span class="line">      <span class="built_in">av_log</span>(ost, AV_LOG_WARNING,</span><br><span class="line">             <span class="string">&quot;The bitrate parameter is set too low.&quot;</span></span><br><span class="line">             <span class="string">&quot; It takes bits/s as argument, not kbits/s\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将编码器上下文的参数复制到输出流的参数中</span></span><br><span class="line">    ret = <span class="built_in">avcodec_parameters_from_context</span>(ost-&gt;st-&gt;codecpar, ost-&gt;enc_ctx);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">av_log</span>(ost, AV_LOG_FATAL,</span><br><span class="line">             <span class="string">&quot;Error initializing the output stream codec context.\n&quot;</span>);</span><br><span class="line">      <span class="built_in">exit_program</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将编码器的附加数据复制到输出流的附加数据中</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;enc_ctx-&gt;nb_coded_side_data) &#123;</span><br><span class="line">      <span class="type">int</span> i;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; ost-&gt;enc_ctx-&gt;nb_coded_side_data; i++) &#123;</span><br><span class="line">        <span class="type">const</span> AVPacketSideData *sd_src = &amp;ost-&gt;enc_ctx-&gt;coded_side_data[i];</span><br><span class="line">        <span class="type">uint8_t</span> *dst_data;</span><br><span class="line"></span><br><span class="line">        dst_data = <span class="built_in">av_stream_new_side_data</span>(ost-&gt;st, sd_src-&gt;type, sd_src-&gt;size);</span><br><span class="line">        <span class="keyword">if</span> (!dst_data)</span><br><span class="line">          <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">        <span class="built_in">memcpy</span>(dst_data, sd_src-&gt;data, sd_src-&gt;size);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理输入流的附加数据，将其复制到输出流的附加数据中。</span></span><br><span class="line">    <span class="keyword">if</span> (ist) &#123;</span><br><span class="line">      <span class="type">int</span> i;</span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; ist-&gt;st-&gt;nb_side_data; i++) &#123;</span><br><span class="line">        AVPacketSideData *sd = &amp;ist-&gt;st-&gt;side_data[i];</span><br><span class="line">        <span class="keyword">if</span> (sd-&gt;type != AV_PKT_DATA_CPB_PROPERTIES) &#123;</span><br><span class="line">          <span class="type">uint8_t</span> *dst = <span class="built_in">av_stream_new_side_data</span>(ost-&gt;st, sd-&gt;type, sd-&gt;size);</span><br><span class="line">          <span class="keyword">if</span> (!dst)</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">          <span class="built_in">memcpy</span>(dst, sd-&gt;data, sd-&gt;size);</span><br><span class="line">          <span class="keyword">if</span> (ist-&gt;autorotate &amp;&amp; sd-&gt;type == AV_PKT_DATA_DISPLAYMATRIX)</span><br><span class="line">            <span class="built_in">av_display_rotation_set</span>((<span class="type">int32_t</span> *)dst, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// copy timebase while removing common factors</span></span><br><span class="line">    <span class="comment">// 复制估计的持续时间作为提示给复用器</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;st-&gt;time_base.num &lt;= <span class="number">0</span> || ost-&gt;st-&gt;time_base.den &lt;= <span class="number">0</span>)</span><br><span class="line">      ost-&gt;st-&gt;time_base =</span><br><span class="line">          <span class="built_in">av_add_q</span>(ost-&gt;enc_ctx-&gt;time_base, (AVRational)&#123;<span class="number">0</span>, <span class="number">1</span>&#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// copy estimated duration as a hint to the muxer</span></span><br><span class="line">    <span class="comment">// 如果输出流的持续时间小于等于0，且输入流的持续时间大于0，将输入流的持续时间转换为输出流的时间基准。</span></span><br><span class="line">    <span class="keyword">if</span> (ost-&gt;st-&gt;duration &lt;= <span class="number">0</span> &amp;&amp; ist &amp;&amp; ist-&gt;st-&gt;duration &gt; <span class="number">0</span>)</span><br><span class="line">      ost-&gt;st-&gt;duration = <span class="built_in">av_rescale_q</span>(ist-&gt;st-&gt;duration, ist-&gt;st-&gt;time_base,</span><br><span class="line">                                       ost-&gt;st-&gt;time_base);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ost-&gt;ist) &#123;</span><br><span class="line">    <span class="comment">// 如果输出流的编码上下文不存在但输入流存在，处理流拷贝的情况</span></span><br><span class="line">    ret = <span class="built_in">init_output_stream_streamcopy</span>(ost);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 初始化输出流，将 ost-&gt;initialized 设置为1</span></span><br><span class="line">  ret = <span class="built_in">of_stream_init</span>(output_files[ost-&gt;file_index], ost);</span><br><span class="line">  <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%BA%8C%EF%BC%89/">https://charstr.github.io/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%BA%8C%EF%BC%89/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%89%EF%BC%89/">FFmpeg转码操作（三）</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/04/10/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/">FFmpeg转码操作（一）</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

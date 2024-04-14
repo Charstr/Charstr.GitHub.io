@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg命令行参数解析 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg命令行参数解析
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 2, 2024&nbsp;&nbsp;13:13:14</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <p><code>ffmpeg_parse_options(int argc, char **argv)</code>解析命令行中全部输入选项。调用两次open_file来打开输入文件和输出文件。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">ffmpeg_parse_options</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">/* 将命令行的参数进行拆分，将拆分结果分类并设置到不同的数据结构中 */</span></span><br><span class="line">  ret = <span class="built_in">split_commandline</span>(&amp;octx, argc, argv, options, groups, <span class="built_in">FF_ARRAY_ELEMS</span>(groups));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// parse_optgroup解析OptionParseContext里边的全局OptionGroup和输入输出的OptionGroup</span></span><br><span class="line">  <span class="comment">// 这里将参数解析到全局变量</span></span><br><span class="line">  ret = <span class="built_in">parse_optgroup</span>(<span class="literal">NULL</span>, &amp;octx.global_opts);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// open_files实现了遍历所有的文件，ifile_open实现的是单个文件的处理，调用了add_input_streams</span></span><br><span class="line">  ret = <span class="built_in">open_files</span>(&amp;octx.groups[GROUP_INFILE], <span class="string">&quot;input&quot;</span>, ifile_open);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">/*------到目前为止输出了各个输入文件各个流的基本信息-------*/</span></span><br><span class="line">  <span class="comment">// 这里调用init_complex_filtergraph函数初始化复杂滤镜，调用了init_input_filter</span></span><br><span class="line">  <span class="comment">// 复杂滤镜和简单滤镜只会初始化一个，都是调 configure_filtergraph来正式打开滤镜容器的，</span></span><br><span class="line">  <span class="comment">// 但是初始化函数以及初始化的位置不一样。</span></span><br><span class="line">  ret = <span class="built_in">init_complex_filters</span>(); <span class="comment">// filtergraphs-&gt;graph还是NULL</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">/* open output files ,调用了init_output_filter函数*/</span></span><br><span class="line">  <span class="comment">// 打开输出文件，init_simple_filtergraph函数初始化了简单滤镜</span></span><br><span class="line">  ret = <span class="built_in">open_files</span>(&amp;octx.groups[GROUP_OUTFILE], <span class="string">&quot;output&quot;</span>, of_open);</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="split-commandline函数"><a href="#split-commandline函数" class="headerlink" title="split_commandline函数"></a>split_commandline函数</h2><p>split_commandline函数把命令行的参数先解析到一个中间结构（OptionParseContext）里面，这个中间结构就是 octx 变量，传进去的options和groups是定义的两个全局变量。groups用到的位置是OptionParseContext-&gt;OptionGroupList-&gt;OptionGroup这个链条中的OptionGroupList和OptionGroup结构体中的OptionGroupDef变量表示输入输出。options用到位置是OptionParseContext-&gt;OptionGroupList-&gt;OptionGroup-&gt;Option-&gt;OptionDef标识的输入输出的某个参数。最终完成把所有输入的命令行参数解析到中间状态OptionParseContext octx变量的OptionGroup 结构。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">split_commandline</span><span class="params">(OptionParseContext *octx, <span class="type">int</span> argc, <span class="type">char</span> *argv[],</span></span></span><br><span class="line"><span class="params"><span class="function">                      <span class="type">const</span> OptionDef *options,</span></span></span><br><span class="line"><span class="params"><span class="function">                      <span class="type">const</span> OptionGroupDef *groups, <span class="type">int</span> nb_groups)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> optindex = <span class="number">1</span>;</span><br><span class="line">  <span class="type">int</span> dashdash = <span class="number">-2</span>; <span class="comment">// 用于检测 &quot;--&quot; 分隔符</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* perform system-dependent conversions for arguments list */</span></span><br><span class="line">  <span class="built_in">prepare_app_arguments</span>(&amp;argc, &amp;argv); <span class="comment">// 执行系统相关的参数转换</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* </span></span><br><span class="line"><span class="comment">  init_parse_context初始化 OptionParseContext 结构体，分配内存等。设置OptionParseContext变量octx-&gt;nb_groups为</span></span><br><span class="line"><span class="comment">  输入输出流个数(1/2)，分别对应输入组和输出组。用av_calloc给nb_groups个OptionGroupList数组</span></span><br><span class="line"><span class="comment">  (一般大小为2对应输入和输出的OptionGroup)申请内存，并将OptionGroupList数组的每个元素（OptionGroup类型）</span></span><br><span class="line"><span class="comment">  中的OptionGroupDef对应GROUP_OUTFILE或GROUP_INFILE，标识输入文件参数组或者输出文件参数组。</span></span><br><span class="line"><span class="comment">  初始化octx中与输入输出文件无关的全局变量global_opts（OptionGroup类型）的OptionGroupDef类型变量。</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="built_in">init_parse_context</span>(octx, groups, nb_groups);</span><br><span class="line">  <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot;Splitting the commandline.\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 遍历argv[]中所有的命令行参数，查找对应的OptionDef,共有3种方式</span></span><br><span class="line">  <span class="keyword">while</span> (optindex &lt; argc) &#123;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *opt = argv[optindex++], *arg; <span class="comment">// 当前命令行参数</span></span><br><span class="line">    <span class="type">const</span> OptionDef *po; <span class="comment">// 指向选项定义的指针</span></span><br><span class="line">    <span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot;Reading option &#x27;%s&#x27; ...&quot;</span>, opt);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 &quot;--&quot; 表示选项结束</span></span><br><span class="line">    <span class="keyword">if</span> (opt[<span class="number">0</span>] == <span class="string">&#x27;-&#x27;</span> &amp;&amp; opt[<span class="number">1</span>] == <span class="string">&#x27;-&#x27;</span> &amp;&amp; !opt[<span class="number">2</span>]) &#123;</span><br><span class="line">        dashdash = optindex;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* unnamed group separators, e.g. output filename */</span></span><br><span class="line">    <span class="comment">// 处理不带 - 的参数（例如输出文件名），匹配到了就跳到下一个参数</span></span><br><span class="line">    <span class="keyword">if</span> (opt[<span class="number">0</span>] != <span class="string">&#x27;-&#x27;</span> || !opt[<span class="number">1</span>] || dashdash+<span class="number">1</span> == optindex) &#123;</span><br><span class="line">        <span class="comment">/* 这里就是找到对应的 OptionGroup 对其中的参数进行赋值 */</span></span><br><span class="line">        <span class="built_in">finish_group</span>(octx, <span class="number">0</span>, opt);</span><br><span class="line">        <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot; matched as %s.\n&quot;</span>, groups[<span class="number">0</span>].name);</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    opt++;</span><br><span class="line"><span class="comment">// 宏，用于获取当前选项对应的参数</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GET_ARG(arg)                                                           \</span></span><br><span class="line"><span class="meta">do &#123;                                                                           \</span></span><br><span class="line"><span class="meta">  arg = argv[optindex++];                                                    \</span></span><br><span class="line"><span class="meta">  <span class="keyword">if</span> (!arg) &#123;                                                                \</span></span><br><span class="line"><span class="meta">      av_log(NULL, AV_LOG_ERROR, <span class="string">&quot;Missing argument for option &#x27;%s&#x27;.\n&quot;</span>, opt);\</span></span><br><span class="line"><span class="meta">      return AVERROR(EINVAL);                                                \</span></span><br><span class="line"><span class="meta">  &#125;                                                                          \</span></span><br><span class="line"><span class="meta">&#125; while (0)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* named group separators, e.g. -i */</span></span><br><span class="line">    <span class="comment">// 处理带 - 的参数，匹配到了就跳到下一个参数</span></span><br><span class="line">    <span class="keyword">if</span> ((ret = <span class="built_in">match_group_separator</span>(groups, nb_groups, opt)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">GET_ARG</span>(arg);</span><br><span class="line">      <span class="built_in">finish_group</span>(octx, ret, arg);</span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot; matched as %s with argument &#x27;%s&#x27;.\n&quot;</span>,</span><br><span class="line">              groups[ret].name, arg);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 1. 查找预先定义的const OptionDef options[]数组，查找输入的参数对应的OptionDef</span></span><br><span class="line">    <span class="comment">// 匹配到了就处理参数</span></span><br><span class="line">    po = <span class="built_in">find_option</span>(options, opt);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (po-&gt;name) &#123;</span><br><span class="line">      <span class="keyword">if</span> (po-&gt;flags &amp; OPT_EXIT) &#123;</span><br><span class="line">          <span class="comment">/* optional argument, e.g. -h */</span></span><br><span class="line">          <span class="comment">/* 可选参数，例如 -h */</span></span><br><span class="line">          arg = argv[optindex++];</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; HAS_ARG) &#123;</span><br><span class="line">          <span class="built_in">GET_ARG</span>(arg);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          arg = <span class="string">&quot;1&quot;</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 将解析到的参数配置设置到输入或输出 Group 的数据结构里面，</span></span><br><span class="line">      <span class="comment">// 根据options-&gt;flag判断cur_group或者global_opts中</span></span><br><span class="line">      <span class="built_in">add_opt</span>(octx, po, opt, arg);</span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot; matched as option &#x27;%s&#x27; (%s) with &quot;</span></span><br><span class="line">              <span class="string">&quot;argument &#x27;%s&#x27;.\n&quot;</span>, po-&gt;name, po-&gt;help, arg);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* AVOptions */</span></span><br><span class="line">    <span class="comment">// 2. 从编解码库，容器库，重采样库等公共组件库，查找公共的OptionDef，如果匹配到了就处理参数</span></span><br><span class="line">    <span class="keyword">if</span> (argv[optindex]) &#123;</span><br><span class="line">      ret = <span class="built_in">opt_default</span>(<span class="literal">NULL</span>, opt, argv[optindex]);</span><br><span class="line">      <span class="keyword">if</span> (ret &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot; matched as AVOption &#x27;%s&#x27; with &quot;</span></span><br><span class="line">                <span class="string">&quot;argument &#x27;%s&#x27;.\n&quot;</span>, opt, argv[optindex]);</span><br><span class="line">        optindex++;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ret != AVERROR_OPTION_NOT_FOUND) &#123;</span><br><span class="line">        <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR, <span class="string">&quot;Error parsing option &#x27;%s&#x27; &quot;</span></span><br><span class="line">                <span class="string">&quot;with argument &#x27;%s&#x27;.\n&quot;</span>, opt, argv[optindex]);</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* boolean -nofoo options */</span></span><br><span class="line">    <span class="comment">// 3. 如果命令参数-nofoo 选项（去掉&quot;no&quot;前缀），再从预定义的options数组查找OptionDef</span></span><br><span class="line">    <span class="comment">// 匹配到了就设置参数值为 &quot;0&quot;</span></span><br><span class="line">    <span class="keyword">if</span> (opt[<span class="number">0</span>] == <span class="string">&#x27;n&#x27;</span> &amp;&amp; opt[<span class="number">1</span>] == <span class="string">&#x27;o&#x27;</span> &amp;&amp;</span><br><span class="line">      (po = <span class="built_in">find_option</span>(options, opt + <span class="number">2</span>)) &amp;&amp;</span><br><span class="line">      po-&gt;name &amp;&amp; po-&gt;flags &amp; OPT_BOOL) &#123;</span><br><span class="line">      <span class="built_in">add_opt</span>(octx, po, opt, <span class="string">&quot;0&quot;</span>);</span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot; matched as option &#x27;%s&#x27; (%s) with &quot;</span></span><br><span class="line">              <span class="string">&quot;argument 0.\n&quot;</span>, po-&gt;name, po-&gt;help);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR, <span class="string">&quot;Unrecognized option &#x27;%s&#x27;.\n&quot;</span>, opt);</span><br><span class="line">    <span class="keyword">return</span> AVERROR_OPTION_NOT_FOUND; </span><br><span class="line">    <span class="comment">// 上边1和3查找options数组找到的参数会通过add_opt函数暂存到OptionParseContext</span></span><br><span class="line">    <span class="comment">// 中的OptionGroup即octx-&gt;global_opts或者octx-&gt;cur_group，2找到的参数会通过</span></span><br><span class="line">    <span class="comment">// opt_default函数暂存到全局的AVDictionary *sws_dict, *swr_opts, </span></span><br><span class="line">    <span class="comment">// *format_opts, *codec_opts中。当解析到输入或输出文件，通过finish_group()</span></span><br><span class="line">    <span class="comment">// 把缓存在OptionGroup cur_group和global_opts及 *sws_dict, *swr_opts, </span></span><br><span class="line">    <span class="comment">// *format_opts, *codec_opts中的参数复制给OptionParseContext中输入输出对应的OptionGroupList数组元素。</span></span><br><span class="line">    <span class="comment">// finish_group内部会对OptionGroupList中输入或输出的OptionGroup数组扩容。</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查是否有剩余的选项，可能会被忽略</span></span><br><span class="line">  <span class="keyword">if</span> (octx-&gt;cur_group.nb_opts || codec_opts || format_opts)</span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_WARNING, <span class="string">&quot;Trailing option(s) found in the &quot;</span></span><br><span class="line">              <span class="string">&quot;command: may be ignored.\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot;Finished splitting the commandline.\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="open-files函数"><a href="#open-files函数" class="headerlink" title="open_files函数"></a>open_files函数</h2><p>open_files函数通过遍历输入/输出文件的OptionGroupList，对每个文件进行操作</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">open_files</span><span class="params">(OptionGroupList *l, <span class="type">const</span> <span class="type">char</span> *inout, <span class="type">int</span> (*open_file)(<span class="type">const</span> OptionsContext *, <span class="type">const</span> <span class="type">char</span> *))</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> i, ret;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 遍历输入/输出文件的OptionGroupList，对每个文件进行操作</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; l-&gt;nb_groups; i++) &#123;</span><br><span class="line">    OptionGroup *g = &amp;l-&gt;groups[i]; <span class="comment">// 取出每个文件对应的OptionGroup</span></span><br><span class="line">    OptionsContext o;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">init_options</span>(&amp;o); <span class="comment">// 初始化输入文件的参数</span></span><br><span class="line">    o.g = g;</span><br><span class="line">    <span class="comment">// 把OptionGroup解析到OptionsContext</span></span><br><span class="line">    <span class="comment">// parse_optgroup函数会有两次调用，第一次是解析中间变量</span></span><br><span class="line">    <span class="comment">// OptionParseContext octx-&gt;global_opts（OptionGroup）到全局OptionGroup。</span></span><br><span class="line">    <span class="comment">// 第二次在open_files调用，分别处理的是octx.groups[GROUP_INFILE]（OptionGroupList）和</span></span><br><span class="line">    <span class="comment">// octx.groups[GROUP_OUTFILE]，遍历输入/输出文件的OptionGroupList，取出每个文件对应的</span></span><br><span class="line">    <span class="comment">// OptionGroup调用parse_optgroup解析到对应的OptionsContext,然后调用打开输入输出文件的回调函数。</span></span><br><span class="line">    <span class="comment">// **OptionsContext结构体中各个字段是最终控制ffmpeg行为的。</span></span><br><span class="line">    ret = <span class="built_in">parse_optgroup</span>(&amp;o, g);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">av_log</span>(</span><br><span class="line">        <span class="literal">NULL</span>, AV_LOG_ERROR,</span><br><span class="line">        <span class="string">&quot;Error parsing options for %s file &quot;</span></span><br><span class="line">        <span class="string">&quot;%s.\n&quot;</span>,</span><br><span class="line">        inout, g-&gt;arg);</span><br><span class="line">      <span class="built_in">uninit_options</span>(&amp;o);</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot;Opening an %s file: %s.\n&quot;</span>, inout, g-&gt;arg);</span><br><span class="line">    <span class="comment">// 回调函数打开输入/输出的文件</span></span><br><span class="line">    ret = <span class="built_in">open_file</span>(&amp;o, g-&gt;arg);</span><br><span class="line">    <span class="built_in">uninit_options</span>(&amp;o);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR, <span class="string">&quot;Error opening %s file %s.\n&quot;</span>, inout, g-&gt;arg);</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_DEBUG, <span class="string">&quot;Successfully opened the file.\n&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>OptionsContext结构体可以分为3个类型.</p>
+<ol>
+<li>OptionGroup字段，是在open_files函数遍历输入输出的OptionGroupList时候赋值，因为OptionGroup中的codec_opts、format_opts等组件库的信息没有解析到OptionsContext中。OptionGroup 里面的 key - value格式通过write_option函数转成OptionsContext 特定的字段的。</li>
+<li>int64_t 单字段普通类型，比如int64_t start_time，int seek_timestamp，const char *format等。</li>
+<li>SpecifierOpt数组字段以及记录该数组大小的变量。</li>
+</ol>
+<h2 id="write-option函数"><a href="#write-option函数" class="headerlink" title="write_option函数"></a>write_option函数</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">write_option</span><span class="params">(<span class="type">void</span> *optctx, <span class="type">const</span> OptionDef *po, <span class="type">const</span> <span class="type">char</span> *opt,</span></span></span><br><span class="line"><span class="params"><span class="function">                        <span class="type">const</span> <span class="type">char</span> *arg)</span></span>&#123;</span><br><span class="line">  <span class="comment">/* new-style options contain an offset into optctx, old-style address of</span></span><br><span class="line"><span class="comment">    * a global var*/</span></span><br><span class="line">  <span class="type">void</span> *dst = po-&gt;flags &amp; (OPT_OFFSET | OPT_SPEC) ?</span><br><span class="line">              (<span class="type">uint8_t</span> *)optctx + po-&gt;u.off : po-&gt;u.dst_ptr;</span><br><span class="line">  <span class="type">int</span> *dstcount;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (po-&gt;flags &amp; OPT_SPEC) &#123;</span><br><span class="line">    SpecifierOpt **so = dst;</span><br><span class="line">    <span class="type">char</span> *p = <span class="built_in">strchr</span>(opt, <span class="string">&#x27;:&#x27;</span>);</span><br><span class="line">    <span class="type">char</span> *str;</span><br><span class="line"></span><br><span class="line">    dstcount = (<span class="type">int</span> *)(so + <span class="number">1</span>);</span><br><span class="line">    *so = <span class="built_in">grow_array</span>(*so, <span class="built_in">sizeof</span>(**so), dstcount, *dstcount + <span class="number">1</span>);</span><br><span class="line">    str = <span class="built_in">av_strdup</span>(p ? p + <span class="number">1</span> : <span class="string">&quot;&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (!str)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">    (*so)[*dstcount - <span class="number">1</span>].specifier = str;</span><br><span class="line">    dst = &amp;(*so)[*dstcount - <span class="number">1</span>].u;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (po-&gt;flags &amp; OPT_STRING) &#123;</span><br><span class="line">    <span class="type">char</span> *str;</span><br><span class="line">    str = <span class="built_in">av_strdup</span>(arg);</span><br><span class="line">    <span class="built_in">av_freep</span>(dst);</span><br><span class="line">    <span class="keyword">if</span> (!str)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">    *(<span class="type">char</span> **)dst = str;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; OPT_BOOL || po-&gt;flags &amp; OPT_INT) &#123;</span><br><span class="line">    *(<span class="type">int</span> *)dst = <span class="built_in">parse_number_or_die</span>(opt, arg, OPT_INT64, INT_MIN, INT_MAX);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; OPT_INT64) &#123;</span><br><span class="line">    *(<span class="type">int64_t</span> *)dst = <span class="built_in">parse_number_or_die</span>(opt, arg, OPT_INT64, INT64_MIN, INT64_MAX);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; OPT_TIME) &#123;</span><br><span class="line">    *(<span class="type">int64_t</span> *)dst = <span class="built_in">parse_time_or_die</span>(opt, arg, <span class="number">1</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; OPT_FLOAT) &#123;</span><br><span class="line">    *(<span class="type">float</span> *)dst = <span class="built_in">parse_number_or_die</span>(opt, arg, OPT_FLOAT, -INFINITY, INFINITY);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;flags &amp; OPT_DOUBLE) &#123;</span><br><span class="line">    *(<span class="type">double</span> *)dst = <span class="built_in">parse_number_or_die</span>(opt, arg, OPT_DOUBLE, -INFINITY, INFINITY);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (po-&gt;u.func_arg) &#123;</span><br><span class="line">    <span class="type">int</span> ret = po-&gt;u.<span class="built_in">func_arg</span>(optctx, opt, arg);</span><br><span class="line">    <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR,</span><br><span class="line">              <span class="string">&quot;Failed to set value &#x27;%s&#x27; for option &#x27;%s&#x27;: %s\n&quot;</span>,</span><br><span class="line">              arg, opt, <span class="built_in">av_err2str</span>(ret));</span><br><span class="line">      <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (po-&gt;flags &amp; OPT_EXIT)</span><br><span class="line">    <span class="built_in">exit_program</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以OptionsContext的<code>SpecifierOpt *codec_names, int nb_codec_names</code>成员变量为例。codec_names是一个指向SpecifierOpt结构体数组的指针，数组元素个数是nb_codec_names。从预定义的OptionDef数组options中：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123; <span class="string">&quot;c&quot;</span>,  HAS_ARG | OPT_STRING | OPT_SPEC |  OPT_INPUT | OPT_OUTPUT, &#123; .off       = <span class="built_in">OFFSET</span>(codec_names) &#125;,</span><br><span class="line">    <span class="string">&quot;codec name&quot;</span>, <span class="string">&quot;codec&quot;</span> &#125;,</span><br><span class="line">&#123; <span class="string">&quot;codec&quot;</span>,  HAS_ARG | OPT_STRING | OPT_SPEC | OPT_INPUT | OPT_OUTPUT, &#123; .off       = <span class="built_in">OFFSET</span>(codec_names) &#125;,</span><br></pre></td></tr></table></figure>
+<p>命令行中出现<code>-c / -c:v / -c:a / -codec</code>时，都会将后面的值保存在codec_names中。<code>.off = OFFSET(codec_names)</code>在选项定义的时候会计算出codec_names成员在OptionsContext结构体中的偏移量，在write_option中根据结构体首地址以及成员偏移量可以得到成员的访问地址：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *dst = po-&gt;flags &amp; (OPT_OFFSET | OPT_SPEC) ?</span><br><span class="line">      (<span class="type">uint8_t</span> *)optctx + po-&gt;u.off : po-&gt;u.dst_ptr;</span><br></pre></td></tr></table></figure>
+<p><code>(uint8_t *)optctx</code>得到输入的OptionsContext的地址，<code>po-&gt;u.off</code>就是codec_names成员在OptionsContext结构体中的偏移量。codec_names是SpecifierOpt指针变量，dst指向的是codec_names的访问地址，所以dst相当于是指向SpecifierOpt指针的指针<code>SpecifierOpt **so = dst;</code></p>
+<p>以下边为例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionsContext</span> &#123;</span><br><span class="line">  OptionGroup *g;</span><br><span class="line">  <span class="type">int64_t</span> start_time;</span><br><span class="line">  <span class="type">int64_t</span> start_time_eof;</span><br><span class="line">  <span class="type">int</span> seek_timestamp;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *format;</span><br><span class="line">  SpecifierOpt *codec_names;</span><br><span class="line">  <span class="type">int</span>        nb_codec_names;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *dst = po-&gt;flags &amp; (OPT_OFFSET | OPT_SPEC) ?</span><br><span class="line">          (<span class="type">uint8_t</span> *)optctx + po-&gt;u.off : po-&gt;u.dst_ptr;</span><br><span class="line"><span class="type">int</span> *dstcount;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (po-&gt;flags &amp; OPT_SPEC) &#123;</span><br><span class="line">  SpecifierOpt **so = dst;</span><br><span class="line">  <span class="type">char</span> *p = <span class="built_in">strchr</span>(opt, <span class="string">&#x27;:&#x27;</span>);</span><br><span class="line">  <span class="type">char</span> *str;</span><br><span class="line"></span><br><span class="line">  dstcount = (<span class="type">int</span> *)(so + <span class="number">1</span>);</span><br><span class="line">  *so = <span class="built_in">grow_array</span>(*so, <span class="built_in">sizeof</span>(**so), dstcount, *dstcount + <span class="number">1</span>);</span><br><span class="line">  str = <span class="built_in">av_strdup</span>(p ? p + <span class="number">1</span> : <span class="string">&quot;&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (!str)</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">  (*so)[*dstcount - <span class="number">1</span>].specifier = str;</span><br><span class="line">  dst = &amp;(*so)[*dstcount - <span class="number">1</span>].u;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>optctx指向的是<code>OptionGroup *g</code>，dst是进行偏移后指向<code>SpecifierOpt *codec_names</code>。在<code>SpecifierOpt **so = dst``之后，dstcount = (int *)(so + 1)</code>相当于是<code>dstcount = (int *)(so +sizoef(SpecifierOpt *))</code>，得到的dstcount指向的是nb_codec_names。</p>
+<p><code>*so = grow_array(*so, sizeof(**so), dstcount, *dstcount + 1);</code>对<code>SpecifierOpt *codec_names</code>这样一个结构体数组扩容，并把nb_codec_names+1，然后<code>(*so)[*dstcount - 1].specifier = str;</code>将-c或者-c:后面的值赋值给新添加的SpecifierOpt变量的specifier字段，然后<code>dst = &amp;(*so)[*dstcount - 1].u;</code>将SpecifierOpt的union成员地址赋值给dst。</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/02/FFmpeg%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90/">https://charstr.github.io/2024/04/02/FFmpeg%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/05/FFmpeg%E6%89%93%E5%BC%80%E8%BE%93%E5%85%A5%E6%96%87%E4%BB%B6/">FFmpeg打开输入文件</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/04/02/FFmpeg%E7%BC%96%E8%AF%91%E8%B0%83%E8%AF%95/">FFmpeg编译调试</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

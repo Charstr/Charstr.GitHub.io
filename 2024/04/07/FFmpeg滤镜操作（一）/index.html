@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg滤镜操作（一） | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg滤镜操作（一）
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 7, 2024&nbsp;&nbsp;20:03:18</a>
+                          </span>
+                          
+                            
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h1 id="init-complex-filters函数"><a href="#init-complex-filters函数" class="headerlink" title="init_complex_filters函数"></a>init_complex_filters函数</h1><p>init_complex_filters函数遍历所有的滤镜图，调用init_complex_filtergraph函数进行复杂滤镜的初始化设置。</p>
+<h2 id="init-complex-filtergraph函数"><a href="#init-complex-filtergraph函数" class="headerlink" title="init_complex_filtergraph函数"></a>init_complex_filtergraph函数</h2><ol>
+<li><p>avfilter_graph_alloc首先创建一个临时的FilterGraph中的AVFilterGraph变量（存储实际的滤镜图），用于graph_parse函数把输入的滤镜图描述符，解析到AVFilterInOut <em>inputs, </em>outputs。<strong>inputs和outputs链表节点的个数对应于一个滤镜图的输入buffer和输出buffersink的个数。</strong></p>
+</li>
+<li><p>遍历输入滤镜，init_input_filter函数初始化每个输入滤镜。根据[1:v]这样的输入参数（以此为例），选择全局输入文件数组input_files中下标为1的输入文件，对应的视频流（InputStream *ist）。</p>
+</li>
+<li><p>ALLOC_ARRAY_ELEM函数给FilterGraph中的InputFilter <strong> inputs输入滤镜指针数组扩容分配内存，将选择的输入流ist和滤镜图赋值给给新创建的InputFilter的成员变量。av_fifo_alloc2给这个新创建的InputFilter申请大小为8帧缓冲队列内存。</strong>因为在未调 avfilter_graph_config() 函数正式打开滤镜容器之前，一个流发送给滤镜的数据都会先缓存到 frame_queue 队列里面，等到打开了滤镜容器后，把他们全部送给滤镜容器。**</p>
+</li>
+<li><p>给全局输入文件数组input_files中下标为1的输入文件，对应的视频流（InputStream <em>ist）的InputFilter *</em>filters扩容分配内存，并将新创建的InputFilter绑定个这个输入流ist。</p>
+</li>
+<li><p>遍历所有输出滤镜，ALLOC_ARRAY_ELEM函数给FilterGraph中的OutputFilter <strong> outputs输出滤镜指针数组扩容分配内存，将滤镜图赋值给新创建的OutputFilter的成员变量。</strong>但是并没有执行输出滤镜和输出流的绑定。**</p>
+</li>
+<li><p><strong>滤镜图中的AVFilterGraph <em>graph和输入输出滤镜中的 AVFilterContext </em>filter 还是 NULL。</strong>在configure_filtergraph函数中创建。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">init_complex_filtergraph</span><span class="params">(FilterGraph *fg)</span> </span>&#123;</span><br><span class="line">  AVFilterInOut *inputs, *outputs, *cur; <span class="comment">// 滤镜链表</span></span><br><span class="line">  AVFilterGraph *graph;</span><br><span class="line">  <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* this graph is only used for determining the kinds of inputs</span></span><br><span class="line"><span class="comment">   * and outputs we have, and is discarded on exit from this function */</span></span><br><span class="line">  <span class="comment">// 分配滤波器图内存，并设置线程数为1，但内部的AVFilterGraph</span></span><br><span class="line">  <span class="comment">// *graph;还没申请内存</span></span><br><span class="line">  graph = <span class="built_in">avfilter_graph_alloc</span>(); <span class="comment">// 临时变量</span></span><br><span class="line">  <span class="keyword">if</span> (!graph)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">AVERROR</span>(ENOMEM);</span><br><span class="line">  graph-&gt;nb_threads = <span class="number">1</span>; <span class="comment">// 每个滤镜图分配一个线程</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 解析滤镜图的描述符到inputs和outputs，通过AVFilterLink建立滤镜之间的连接</span></span><br><span class="line">  <span class="comment">// 开放输入跟输出给其他的滤镜上下文来链接，真正滤镜图在configure_filtergraph函数配置连接</span></span><br><span class="line">  ret = <span class="built_in">graph_parse</span>(graph, fg-&gt;graph_desc, &amp;inputs, &amp;outputs);</span><br><span class="line">  <span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">goto</span> fail;</span><br><span class="line">  <span class="comment">// 这里边进行了输入滤镜分配了内存</span></span><br><span class="line">  <span class="comment">// 遍历输入，绑定 InputFilter 跟</span></span><br><span class="line">  <span class="comment">// InputStream，1:v这样指定的就是第一个输入文件，类型为视频</span></span><br><span class="line">  <span class="keyword">for</span> (cur = inputs; cur; cur = cur-&gt;next)</span><br><span class="line">    <span class="built_in">init_input_filter</span>(fg, cur);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 遍历输出，初始化输出滤镜</span></span><br><span class="line">  <span class="keyword">for</span> (cur = outputs; cur; cur = cur-&gt;next) &#123;</span><br><span class="line">    OutputFilter *<span class="type">const</span> ofilter = <span class="built_in">ALLOC_ARRAY_ELEM</span>(fg-&gt;outputs, fg-&gt;nb_outputs);</span><br><span class="line">    <span class="comment">// 设置输出滤波器的属性</span></span><br><span class="line">    ofilter-&gt;graph = fg;</span><br><span class="line">    ofilter-&gt;out_tmp = cur;</span><br><span class="line">    ofilter-&gt;type =</span><br><span class="line">        <span class="built_in">avfilter_pad_get_type</span>(cur-&gt;filter_ctx-&gt;output_pads, cur-&gt;pad_idx);</span><br><span class="line">    ofilter-&gt;name = <span class="built_in">describe_filter_link</span>(fg, cur, <span class="number">0</span>);</span><br><span class="line">    ofilter-&gt;out_tmp-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">fail:</span><br><span class="line">  <span class="comment">// AVFilterGraph *graph 只是临时用确定输入输出。后面在 configure_filtergraph()</span></span><br><span class="line">  <span class="comment">// 函数里会再调 graph_parse生成一个新的 graph</span></span><br><span class="line">  <span class="comment">// 来完成滤镜的功能。释放输入的内存，释放滤波器图内存</span></span><br><span class="line">  <span class="built_in">avfilter_inout_free</span>(&amp;inputs);</span><br><span class="line">  <span class="built_in">avfilter_graph_free</span>(&amp;graph);</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="init-input-filter函数"><a href="#init-input-filter函数" class="headerlink" title="init_input_filter函数"></a>init_input_filter函数</h3><h1 id="init-simple-filtergraph函数"><a href="#init-simple-filtergraph函数" class="headerlink" title="init_simple_filtergraph函数"></a>init_simple_filtergraph函数</h1><ol>
+<li><p>初始化简单滤镜，在of_open函数调用。简单滤镜只有一个输入文件，只需要遍历所有的流就可以。ost-&gt;enc_ctx &amp;&amp; ost-&gt;ist才会进行调用init_simple_filtergraph函数。create_streams函数中复杂滤镜的ost-&gt;ist=NULL，所以<strong>一定不会</strong>进入到简单滤镜的初始化。</p>
+</li>
+<li><p>给简单滤镜分配内存并初始化一个FilterGraph（AVFilterGraph <em>graph要等到configure_filtergraph函数）。<strong>ALLOC_ARRAY_ELEM给滤镜图的OutputFilter </strong>outputs分配内存，将输出流ost和滤镜图赋值给新创建的OutputFilter的成员变量。将输出滤镜赋值给输出流OutputStream的OutputFilter </em>filter成员变量。**</p>
+</li>
+<li><p>ALLOC_ARRAY_ELEM给滤镜图的InputFilter <strong> inputs输入滤镜指针数组分配内存扩容，</strong>将输入流ist和滤镜图赋值给新创建的InputFilter的成员变量。<strong>av_fifo_alloc2给新创建的InputFilter申请大小为8帧缓冲队列内存。</strong>因为在未调 avfilter_graph_config() 函数正式打开滤镜容器之前，一个流发送给滤镜的数据都会先缓存到 frame_queue 队列里面，等到打开了滤镜容器后，把他们全部送给滤镜容器。**</p>
+</li>
+<li><p>GROW_ARRAY给输入流的InputFilter <strong>filters输入滤镜指针数组扩容并存储3.的输入滤镜指针；给全局滤镜图FilterGraph </strong>filtergraph数组扩容并将2.新创建的FilterGraph存到全局的FilterGraph **filtergraphs。</p>
+</li>
+<li><p><strong>最终的滤镜图中的AVFilterGraph <em>graph和输入输出滤镜中的 AVFilterContext </em>filter 还是 NULL。</strong>在configure_filtergraph函数中创建。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">init_simple_filtergraph</span><span class="params">(InputStream *ist, OutputStream *ost)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 分配FilterGraph结构体并初始化,但内部的AVFilterGraph *graph;还没申请内存</span></span><br><span class="line">  FilterGraph *fg = <span class="built_in">av_mallocz</span>(<span class="built_in">sizeof</span>(*fg));</span><br><span class="line">  OutputFilter *ofilter;</span><br><span class="line">  InputFilter *ifilter;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!fg)</span><br><span class="line">    <span class="built_in">report_and_exit</span>(<span class="built_in">AVERROR</span>(ENOMEM));</span><br><span class="line">  fg-&gt;index = nb_filtergraphs; <span class="comment">// 设置滤镜图的索引</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 分配输出滤镜结构体并初始化</span></span><br><span class="line">  ofilter = <span class="built_in">ALLOC_ARRAY_ELEM</span>(fg-&gt;outputs, fg-&gt;nb_outputs);</span><br><span class="line">  ofilter-&gt;ost = ost;  <span class="comment">// 关联输出流</span></span><br><span class="line">  ofilter-&gt;graph = fg; <span class="comment">// 关联滤镜图</span></span><br><span class="line">  ofilter-&gt;format = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  ost-&gt;filter = ofilter; <span class="comment">// 将输出滤镜关联到输出流</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 分配输入滤镜结构体并初始化</span></span><br><span class="line">  ifilter = <span class="built_in">ALLOC_ARRAY_ELEM</span>(fg-&gt;inputs, fg-&gt;nb_inputs);</span><br><span class="line">  ifilter-&gt;ist = ist;  <span class="comment">// 关联输入流</span></span><br><span class="line">  ifilter-&gt;graph = fg; <span class="comment">// 关联滤镜图</span></span><br><span class="line">  ifilter-&gt;format = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 帧队列frame_queue用于存储处理过的帧</span></span><br><span class="line">  ifilter-&gt;frame_queue =</span><br><span class="line">      <span class="built_in">av_fifo_alloc2</span>(<span class="number">8</span>, <span class="built_in">sizeof</span>(AVFrame *), AV_FIFO_FLAG_AUTO_GROW);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!ifilter-&gt;frame_queue)</span><br><span class="line">    <span class="built_in">report_and_exit</span>(<span class="built_in">AVERROR</span>(ENOMEM));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将输入滤镜关联到输入流</span></span><br><span class="line">  <span class="built_in">GROW_ARRAY</span>(ist-&gt;filters, ist-&gt;nb_filters);</span><br><span class="line">  ist-&gt;filters[ist-&gt;nb_filters - <span class="number">1</span>] = ifilter;</span><br><span class="line">  <span class="comment">// 将滤镜图关联到全局的filtergraphs数组中</span></span><br><span class="line">  <span class="built_in">GROW_ARRAY</span>(filtergraphs, nb_filtergraphs);</span><br><span class="line">  filtergraphs[nb_filtergraphs - <span class="number">1</span>] = fg;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="configure-filtergraph"><a href="#configure-filtergraph" class="headerlink" title="configure_filtergraph"></a>configure_filtergraph</h1><ol>
+<li>复杂滤镜如下, 对应配置的滤镜图:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[0]trim=start_frame=10:end_frame=20[v0];\</span><br><span class="line">[0]trim=start_frame=30:end_frame=40[v1];\</span><br><span class="line">[v0][v1]concat=n=2[v2];\</span><br><span class="line">[1]hflip[v3];\</span><br><span class="line">[v2][v3]overlay=eof_action=repeat[v4];\</span><br><span class="line">[v4]drawbox=50:50:120:120:red:t=5[v5]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><img src="复杂滤镜图.png" alt="复杂滤镜图" style="zoom:75%;" /></p>
+<ol>
+<li><p>复杂滤镜的graph_desc就是命令行输入的滤镜参数。avfilter_graph_alloc()<strong>给fg-&gt;graph滤镜图中的AVFilterGraph *graph分配内存。</strong>首先是参数设置。简单滤镜先设置线程数和sws、swr参数，复杂滤镜只设置线程数.</p>
+</li>
+<li><p>graph_parse把命令行的滤镜参数解析为inputs和outputs链表的节点，链表节点数表示滤镜图的入口和出口数。</p>
+</li>
+<li><p>遍历每个入口和出口的节点，configure_input_filter和configure_output_filter分别给滤镜图的入口和出口加上buffer和buffersink滤镜，并用avfilter_link连接节点的pads。</p>
+</li>
+<li><p>avfilter_graph_config配置滤镜图，验证参数配置是否正确</p>
+</li>
+<li><p>在未打开滤镜容器之前，发送给滤镜的数据先缓存在 frame_queue 队列中。这里已经打开了滤镜容器，就遍历输入滤镜，循环从缓冲队列读取AVFrame然后av_buffersrc_add_frame送给滤镜容器进行处理。</p>
+</li>
+<li><p>遍历输入滤镜，<strong>如果某个输入滤镜已经eof了，就发送NULL到已经处理完毕的输入滤镜</strong>。</p>
+</li>
+<li><p>涉及部分结构体如下:</p>
+<pre><code> typedef struct AVFilterGraph &#123;
+     AVFilterContext **filters; // 每个滤镜实例的结构体指针
+     AVFilterLink **sink_links;
+     ...
+ &#125;
+ // 每个滤镜示例
+ struct AVFilterContext &#123;
+     const AVFilter *filter; // 具体的滤镜
+     AVFilterPad *input_pads; // 跟这个滤镜相连的入口连接点
+     AVFilterLink **inputs;  // 入端的连接线
+     unsigned nb_inputs; // 入端个数
+     AVFilterPad *output_pads; // 跟这个滤镜相连的出口连接点
+     AVFilterLink **outputs; // 出端的连接线
+     unsigned nb_outputs; // 出端个数
+ &#125;
+
+ // 滤镜连接
+ struct AVFilterLink &#123;
+     AVFilterContext *src; ///&lt; source filter
+     AVFilterPad *srcpad; ///&lt; output pad on the source filter
+
+     AVFilterContext *dst; ///&lt; dest filter
+     AVFilterPad *dstpad; ///&lt; input pad on the dest filter
+
+ &#125;
+</code></pre></li>
+</ol>
+<h1 id="reap-filter函数"><a href="#reap-filter函数" class="headerlink" title="reap_filter函数"></a>reap_filter函数</h1><ol>
+<li><p>负责从出口滤镜里读取AVFrame，然后发送给编码器编码，最后保存进去文件。reap_filter函数会在两种情况下传进来flush=1参数.</p>
+<ol>
+<li>transcode_step函数中,根据输出流选择输入流的时候. transcode_from_filter函数里边,avfilter_graph_request_oldest查找滤镜链中请求失败次数最多的滤镜来确定输入流,返回了EOF表示处理完了</li>
+<li>ifilter_send_frame函数在进行滤镜图的初始化的时候,要刷新编码器</li>
+</ol>
+</li>
+<li><p>遍历所有的输出流，<strong>首先会初始化音频输出流。</strong>为什么先初始化音频输出流？</p>
+<ol>
+<li>音频通常具有固定的采样率、通道数等属性，时间戳通常依赖于帧的时长和帧的采样率,这些属性在音频编码器（AVCodecContext）中通常在初始化时就已经确定好了。</li>
+<li>视频的帧率、分辨率等属性可能是可变的，尤其是在处理视频滤镜时,时间戳通常依赖于帧率，而帧率可能是可变的，这些属性可能会被滤镜处理过程中的参数所影响。</li>
+<li>综上，音频的输出流通常具有固定的属性，这些属性在音频编码器初始化时就已经确定好了，所以在初始化输出流时，不需要等待滤镜输出帧。而对于视频，由于属性可能会受到滤镜处理参数的影响，需要等待滤镜输出帧，获取帧的属性信息，然后才能初始化输出流（封装在do_video_out() 函数里面的）。</li>
+</ol>
+</li>
+<li><p><strong>while循环调用av_buffersink_get_frame_flags从buffersink滤镜读取经过滤镜处理的frame</strong>. </p>
+</li>
+<li><p>对滤镜处理后帧的时间戳进行调整。然后根据帧的类型送到对应的do_video_out和do_audio_out进行编码并输出。</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个函数返回EOF 其实就是</span></span><br><span class="line"><span class="comment">// av_buffersink_get_frame_flags返回的，表示已经不能输出滤镜读取到frame了</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">reap_filters</span><span class="params">(<span class="type">int</span> flush)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  AVFrame *filtered_frame =</span><br><span class="line">      <span class="literal">NULL</span>; <span class="comment">// 存储一个经过滤镜处理后的buffer，并送给encoder</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Reap all buffers present in the buffer sinks */</span></span><br><span class="line">  <span class="comment">// 遍历输出流选择对应的输出文件</span></span><br><span class="line">  <span class="keyword">for</span> (OutputStream *ost = <span class="built_in">ost_iter</span>(<span class="literal">NULL</span>); ost; ost = <span class="built_in">ost_iter</span>(ost)) &#123;</span><br><span class="line"></span><br><span class="line">    OutputFile *of = output_files[ost-&gt;file_index]; <span class="comment">// 输出文件</span></span><br><span class="line">    AVFilterContext *filter;</span><br><span class="line">    AVCodecContext *enc = ost-&gt;enc_ctx; <span class="comment">// 编码器上下文</span></span><br><span class="line">    <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 当前输出流没有输出滤镜或者滤镜图还没有初始化，跳过本次循环</span></span><br><span class="line">    <span class="keyword">if</span> (!ost-&gt;filter || !ost-&gt;filter-&gt;graph-&gt;graph)</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    <span class="comment">// OutputStream的filter指针指向buffersink.c定义的AVFilterContext</span></span><br><span class="line">    filter = ost-&gt;filter-&gt;filter;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    初始化音频输出流</span></span><br><span class="line"><span class="comment">    关于音频：</span></span><br><span class="line"><span class="comment">    1.</span></span><br><span class="line"><span class="comment">    音频通常具有固定的采样率、通道数等属性，这些属性在音频编码器（AVCodecContext）中通常在初始化时就已经确定好了。</span></span><br><span class="line"><span class="comment">    2.</span></span><br><span class="line"><span class="comment">    音频的时间戳通常依赖于帧的时长和帧的采样率，而这些信息在音频编码器中已经设定好。</span></span><br><span class="line"><span class="comment">    关于视频：</span></span><br><span class="line"><span class="comment">    1.</span></span><br><span class="line"><span class="comment">    视频的帧率、分辨率等属性可能是可变的，尤其是在处理视频滤镜时，这些属性可能会被滤镜处理过程中的参数所影响。</span></span><br><span class="line"><span class="comment">    2. 视频的时间戳通常依赖于帧率，而帧率可能是可变的。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">    综上，音频的输出流通常具有固定的属性，这些属性在音频编码器初始化时就已经确定好了，所以在初始化输出流时，不需要等待滤镜输出帧。而对于视频，由于属性可能会受到滤镜处理参数的影响，需要等待滤镜输出帧，获取帧的属性信息，然后才能初始化输出流（封装在do_video_out()</span></span><br><span class="line"><span class="comment">    函数里面的）。</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="comment">// 提前初始化音频的输出流</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">av_buffersink_get_type</span>(filter) == AVMEDIA_TYPE_AUDIO)</span><br><span class="line">      <span class="built_in">init_output_stream_wrapper</span>(ost, <span class="literal">NULL</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    filtered_frame = ost-&gt;filtered_frame;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 一个frame可能会编码成多个AVPacket，所以while循环读取pkt</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 循环调用，从buffersink读取经过输出滤镜后的frame，会返回AVERROR_EOF</span></span><br><span class="line">      ret = <span class="built_in">av_buffersink_get_frame_flags</span>(filter, filtered_frame,</span><br><span class="line">                                          AV_BUFFERSINK_FLAG_NO_REQUEST);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 读取出现数据错误或者EOF了</span></span><br><span class="line">      <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 错误的处理</span></span><br><span class="line">        <span class="keyword">if</span> (ret != <span class="built_in">AVERROR</span>(EAGAIN) &amp;&amp; ret != AVERROR_EOF) &#123;</span><br><span class="line">          <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_WARNING,</span><br><span class="line">                 <span class="string">&quot;Error in av_buffersink_get_frame_flags(): %s\n&quot;</span>,</span><br><span class="line">                 <span class="built_in">av_err2str</span>(ret));</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (flush &amp;&amp; ret == AVERROR_EOF) &#123;</span><br><span class="line">          <span class="comment">// 从输出滤镜读取出现EOF会进入到这里，传入NULL的帧，flush输出滤镜</span></span><br><span class="line">          <span class="keyword">if</span> (<span class="built_in">av_buffersink_get_type</span>(filter) == AVMEDIA_TYPE_VIDEO)</span><br><span class="line">            <span class="built_in">do_video_out</span>(of, ost, <span class="literal">NULL</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 输出流已经完成（finished），则释放帧并继续下一次循环。</span></span><br><span class="line">      <span class="keyword">if</span> (ost-&gt;finished) &#123;</span><br><span class="line">        <span class="built_in">av_frame_unref</span>(filtered_frame);</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 处理帧的时间戳，将其转换为合适的时间基。</span></span><br><span class="line">      <span class="keyword">if</span> (filtered_frame-&gt;pts != AV_NOPTS_VALUE) &#123;</span><br><span class="line">        AVRational tb = <span class="built_in">av_buffersink_get_time_base</span>(filter);</span><br><span class="line">        ost-&gt;last_filter_pts =</span><br><span class="line">            <span class="built_in">av_rescale_q</span>(filtered_frame-&gt;pts, tb, AV_TIME_BASE_Q);</span><br><span class="line">        filtered_frame-&gt;time_base = tb;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (debug_ts)</span><br><span class="line">          <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_INFO,</span><br><span class="line">                 <span class="string">&quot;filter_raw -&gt; pts:%s pts_time:%s time_base:%d/%d\n&quot;</span>,</span><br><span class="line">                 <span class="built_in">av_ts2str</span>(filtered_frame-&gt;pts),</span><br><span class="line">                 <span class="built_in">av_ts2timestr</span>(filtered_frame-&gt;pts, &amp;tb), tb.num, tb.den);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 根据帧的类型选择编码器进行编码</span></span><br><span class="line">      <span class="keyword">switch</span> (<span class="built_in">av_buffersink_get_type</span>(filter)) &#123;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_VIDEO:</span><br><span class="line">        <span class="keyword">if</span> (!ost-&gt;frame_aspect_ratio.num)</span><br><span class="line">          enc-&gt;sample_aspect_ratio = filtered_frame-&gt;sample_aspect_ratio;</span><br><span class="line">        <span class="comment">// 对视频帧编码输出</span></span><br><span class="line">        <span class="built_in">do_video_out</span>(of, ost, filtered_frame);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> AVMEDIA_TYPE_AUDIO:</span><br><span class="line">        <span class="keyword">if</span> (!(enc-&gt;codec-&gt;capabilities &amp; AV_CODEC_CAP_PARAM_CHANGE) &amp;&amp;</span><br><span class="line">            enc-&gt;ch_layout.nb_channels !=</span><br><span class="line">                filtered_frame-&gt;ch_layout.nb_channels) &#123;</span><br><span class="line">          <span class="built_in">av_log</span>(<span class="literal">NULL</span>, AV_LOG_ERROR,</span><br><span class="line">                 <span class="string">&quot;Audio filter graph output is not normalized and encoder does &quot;</span></span><br><span class="line">                 <span class="string">&quot;not support parameter changes\n&quot;</span>);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">do_audio_out</span>(of, ost, filtered_frame);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">default</span>:</span><br><span class="line">        <span class="comment">// TODO support subtitle filters</span></span><br><span class="line">        <span class="built_in">av_assert0</span>(<span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="built_in">av_frame_unref</span>(filtered_frame); <span class="comment">// 这一帧编码输出后解引用</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/">https://charstr.github.io/2024/04/07/FFmpeg%E6%BB%A4%E9%95%9C%E6%93%8D%E4%BD%9C%EF%BC%88%E4%B8%80%EF%BC%89/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/04/09/FFmpeg%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">FFmpeg源码分析</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/04/07/FFmpeg%E6%89%93%E5%BC%80%E8%BE%93%E5%87%BA%E6%96%87%E4%BB%B6/">FFmpeg打开输出文件</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

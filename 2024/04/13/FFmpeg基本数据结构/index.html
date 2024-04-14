@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>FFmpeg基本数据结构 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  FFmpeg基本数据结构
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">4月 13, 2024&nbsp;&nbsp;18:21:45</a>
+                          </span>
+                          
+                            
+                              <span class="post-category">
+                                Category:
+                                
+                                  <a href="/categories/FFmpeg/">FFmpeg</a>
+                                  
+                              </span>
+                              
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h1 id="结构体嵌套关系"><a href="#结构体嵌套关系" class="headerlink" title="结构体嵌套关系"></a>结构体嵌套关系</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionParseContext</span> &#123;  <span class="comment">//存储命令行参数的中间状态</span></span><br><span class="line">    OptionGroup global_opts; <span class="comment">// 全局的OptionGroup</span></span><br><span class="line">    OptionGroupList *groups; <span class="comment">// OptionGroupList数组，存储输入输出流对应OptionGroupList</span></span><br><span class="line">    <span class="type">int</span>           nb_groups; <span class="comment">// OptionGroupList数组大小，一般为2表示输入输出</span></span><br><span class="line">    OptionGroup cur_group;<span class="comment">// 临时存储OptionGroup的信息，用于逐步解析和设置选项</span></span><br><span class="line">&#125; OptionParseContext;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionGroupList</span> &#123; <span class="comment">// 选项组定义</span></span><br><span class="line">    <span class="type">const</span> OptionGroupDef *group_def; <span class="comment">//OptionGroupDef数组，包含选项组名称和选项定义</span></span><br><span class="line">    OptionGroup *groups; <span class="comment">// 一个数组，存储每个输入/输出文件的OptionGroup</span></span><br><span class="line">    <span class="type">int</span>       nb_groups; <span class="comment">// 列表中OptionGroup数量，表示输入或文件的个数。</span></span><br><span class="line">&#125; OptionGroupList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionGroupDef</span> &#123;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *name; <span class="comment">// 标识选项组的类型（例如输入文件或输出文件）</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *sep; <span class="comment">// 分隔符用于在命令行参数中分隔不同的选项组。</span></span><br><span class="line">    <span class="type">int</span> flags; <span class="comment">// 标志定义应用于该组的每个选项必须设置的选项标志。</span></span><br><span class="line">&#125; OptionGroupDef;</span><br></pre></td></tr></table></figure>
+<p>OptionGroupList中两个元素分别对应输出组和输入组，每个元素中的OptionGroupDef对应如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> OptionGroupDef groups[] = &#123;</span><br><span class="line">    [GROUP_OUTFILE] = &#123; <span class="string">&quot;output url&quot;</span>,  <span class="literal">NULL</span>, OPT_OUTPUT &#125;,</span><br><span class="line">    [GROUP_INFILE]  = &#123; <span class="string">&quot;input url&quot;</span>,   <span class="string">&quot;i&quot;</span>,  OPT_INPUT &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">OptionParseContext-&gt;groups[<span class="number">0</span>].group_def=groups[<span class="number">0</span>];</span><br><span class="line">OptionParseContext-&gt;groups[<span class="number">1</span>].group_def=groups[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> OptionGroupDef global_group = &#123; <span class="string">&quot;global&quot;</span> &#125;;</span><br><span class="line">OptionParseContext-&gt;global_opts.group_def = global_group;</span><br></pre></td></tr></table></figure>
+<p>上边四行代码，输入输出OptionGroupList中的OptionGroupDef对应的是GROUP_OUTFILE或者GROUP_INFILE，标识这个OptionGroupList是输入文件参数组或者输出文件参数组。后两行，OptionParseContext中的全局OptionGroup global_opts中的OptionGroupDef对应的是全局的参数global_group。</p>
+<p>OptionGroupList中的OptionGroup *groups是个OptionGroup数组，数组大小是OptionGroup.nb_groups，也就是对应nb_groups个输入/输出文件的OptionGroup。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionGroup</span> &#123;</span><br><span class="line">    <span class="type">const</span> OptionGroupDef *group_def;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *arg; <span class="comment">// 文件名</span></span><br><span class="line">    Option *opts; <span class="comment">// Option数组，包含Option的具体定义</span></span><br><span class="line">    <span class="type">int</span>  nb_opts; <span class="comment">// Option的数量，表示该选项组中的选项个数</span></span><br><span class="line">    AVDictionary *codec_opts; <span class="comment">//存储编解码器Option的字典</span></span><br><span class="line">    AVDictionary *format_opts; <span class="comment">//存储与格式相关Option的字典</span></span><br><span class="line">    AVDictionary *sws_dict; <span class="comment">// 存储与图像转换相关Option的字典</span></span><br><span class="line">    AVDictionary *swr_opts; <span class="comment">// 存储与音频重采样相关Option的字典</span></span><br><span class="line">&#125; OptionGroup;</span><br></pre></td></tr></table></figure>
+<p>每个输入/输出文件的OptionGroup中有个Option <em>opts的Option数组，大小是nb_opts，对应的是nb_opts个输入/输出的命令行参数，每个Option都有个const OptionDef  </em>opt的指针，指向的输入参数key在全局const OptionDef options[]中的位置。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">Option</span> &#123;</span><br><span class="line">    <span class="type">const</span> OptionDef  *opt; <span class="comment">// 对应的是</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>       *key;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>       *val;</span><br><span class="line">&#125; Option;</span><br></pre></td></tr></table></figure><br>每个OptionDef都有一个名称，这个。此外，OptionDef还有一些标志，这些标志。最后，OptionDef包含一个联合体，这个联合体包含了不同类型的字段，这些字段用于存储该选项的值（例如整数、浮点数或字符串）。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">OptionDef</span> &#123; <span class="comment">// 定义一个命令行选项的行为和属性</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *name; <span class="comment">// 名称用于在命令行参数中识别该选项</span></span><br><span class="line">    <span class="type">int</span> flags; <span class="comment">// 标志定义了该选项的行为（例如该选项是否需要一个参数）</span></span><br><span class="line">    ...省略宏定义</span><br><span class="line">    <span class="keyword">union</span> &#123; <span class="comment">//参数的值，或者是处理参数的函数，又或者是 OptionsContext 结构体的偏移值（off），通过偏移值找到结构体中的某个字段。</span></span><br><span class="line">        <span class="type">void</span> *dst_ptr;</span><br><span class="line">        <span class="built_in">int</span> (*func_arg)(<span class="type">void</span> *, <span class="type">const</span> <span class="type">char</span> *, <span class="type">const</span> <span class="type">char</span> *);</span><br><span class="line">        <span class="type">size_t</span> off;</span><br><span class="line">    &#125; u;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *help; <span class="comment">//帮助文本，描述该选项的功能</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *argname; <span class="comment">//参数名称，如果该选项需要一个参数，则此字段包含该参数的名称。</span></span><br><span class="line">&#125; OptionDef;</span><br></pre></td></tr></table></figure></p>
+<h1 id="较多使用指针数组"><a href="#较多使用指针数组" class="headerlink" title="较多使用指针数组"></a>较多使用指针数组</h1><ol>
+<li>ffmpeg中使用的指针数组，这样比一维数组更好用，如<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">InputFile   **input_files; <span class="comment">// 全局输入文件</span></span><br><span class="line"><span class="type">int</span>        nb_input_files;</span><br><span class="line"></span><br><span class="line">FilterGraph **filtergraphs;<span class="comment">// 全局滤镜</span></span><br><span class="line"><span class="type">int</span>        nb_filtergraphs;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> <span class="title class_">InputFile</span>&#123;</span><br><span class="line">    ... <span class="comment">// 单个输入文件的数据流，音视频流</span></span><br><span class="line">    InputStream **streams;</span><br><span class="line">    <span class="type">int</span>        nb_streams;</span><br><span class="line">    ...</span><br><span class="line">&#125; InputFile;</span><br></pre></td></tr></table></figure></li>
+<li>当处理元素大小较大、需要频繁进行动态内存分配和释放、或者需要灵活性处理不连续内存时，使用指针数组是一种高效的选择。<ol>
+<li>节省内存。只需要存储8字节的指针，而不是完整的元素。</li>
+<li>动态内存分配和释放效率高。添加或删除元素时，只需调整指针，不需要移动大块的数据。</li>
+<li>非连续内存。指针数组的元素（指针）可以指向非连续的内存区域，不需要找到一块足够大的连续内存来存储所有的元素。</li>
+</ol>
+</li>
+</ol>
+<h1 id="自定义内存IO模式"><a href="#自定义内存IO模式" class="headerlink" title="自定义内存IO模式"></a>自定义内存IO模式</h1><h2 id="AVIOContext"><a href="#AVIOContext" class="headerlink" title="AVIOContext"></a>AVIOContext</h2><ol>
+<li>用于输入/输出操作的上下文结构体，通常是编译器默认提供的有。用户可以自定义IO模式进行数据读写，需要提供申请的那块内存，以及所需的读取写入以及seek的函数指针和相关参数。内部有读写缓冲区，同一时刻只能读或写。</li>
+</ol>
+<h2 id="avio-alloc-context"><a href="#avio-alloc-context" class="headerlink" title="avio_alloc_context"></a>avio_alloc_context</h2><ol>
+<li><p>通常情况下，FFmpeg会提供默认的AVIOContext，用于处理文件或网络等标准输入/输出。<strong>如果从内存缓冲区读取数据或将数据写入到自定义的数据结构中，可以通过avio_alloc_context函数可以创建一个自定义的AVIOContext上下文，自定义读取、写入以及seek的回调函数，实现对自定义数据源或目标的读取、写入以及定位。</strong></p>
+<pre><code> AVIOContext *avio_alloc_context( 
+             unsigned char *buffer,
+             int buffer_size, int write_flag,
+             void *opaque,
+             int (*read_packet)(void *opaque, uint8_t *buf, int buf_size),
+             int (*write_packet)(void *opaque, uint8_t *buf, int buf_size),
+             int64_t (*seek)(void *opaque, int64_t offset, int whence));
+</code></pre><p> buffer是av_malloc申请的内存，buffer_size是这块内存的大小，自定义函数和ffmpeg API操作这块内存进行搭桥。write_flag=0是用自定义的写，ffmpeg的读；write_flag=1是用自定义的读，ffmpeg的写；opaque是自定义的上下文数据，两个读写的回调函数是在opaque和buf之间进行buf_size大小的读写。</p>
+</li>
+<li><p>read_packet从自定义数据源中读取数据返回实际读取大小，write_packet将数据写入自定义数据目标返回实际写入多少，seek操作自定义的数据类型，根据offset和whence定位数据位置，并返回定位后的位置。whence是seek的类型，AVSEEK_SIZE不进行seek，而是求buff的大小。SEEK_SET是从文件开始偏移offset，并返回偏移后的地址；SEEK_SET是从相对于开始已经用到的位置，开始偏移offset，并返回偏移后的地址；SEEK_END是相对末尾的偏移，此时offset为负数向前seek。</p>
+</li>
+</ol>
+<h2 id="avio-context-free"><a href="#avio-context-free" class="headerlink" title="avio_context_free"></a>avio_context_free</h2><ol>
+<li>自定义的AVIOContext的释放</li>
+</ol>
+<h1 id="AVFrame"><a href="#AVFrame" class="headerlink" title="AVFrame"></a>AVFrame</h1><ol>
+<li><p>av_frame_alloc进行分配，，av_frame_free进行释放，只分配AVFrame本身的内存，需要其他方式管理数据缓冲区。一次分配，多次复用。复用时候需要av_frame_unref释放引用。</p>
+</li>
+<li><p>真正的数据缓冲在buf字段，data的所有指针指向buf内部，超过缓冲区AV_NUM_DATA_POINTERS=8的指针存在extended_buf数组。linesize数组为每个数据平面的行大小；还包括音视频帧的宽高，采样格式，pts和dts，该frame是否关键帧等信息。</p>
+</li>
+<li>YUV420P中的P的意思是数据布局是planar格式，没有P的是packed格式。<ol>
+<li>如果是planar格式，data[0]指向Y数据，data[1]指向U数据，data[2]指向V数据。linesize数组存的是stride的值。stride=图像宽度*分量数*单位样本宽度/水平子采样因子/位深。水平子采样因子指在水平方向上每多少个像素采样出一个色度样本。</li>
+<li>如果是packed格式，YUV交替存储，data[0]指向所有数据，linesize[0]代表这帧图片的大小，此时data[1]跟data[2]都是没有用。</li>
+</ol>
+</li>
+</ol>
+<h1 id="AVFormatContext"><a href="#AVFormatContext" class="headerlink" title="AVFormatContext"></a>AVFormatContext</h1><ol>
+<li><p>AVFormatContext音视频格式上下文内部封装了AVInputFormat输入格式和AVOutputFormat输出格式的指针，以及一些输入输出通用的信息如duration视频时长，nb_streams数据流个数，codec_type数据流类型等放在AVFormatContext内部。0代表视频流，1代表音频流。</p>
+</li>
+<li><p>默认读取音视频数据是阻塞的，当没有音视频数据可用时，读取操作会一直等待，直到有数据可用为止，某些场景下可能会导致程序暂停或卡住。结构体中flags字段有AVFMT_FLAG_NONBLOCK非阻塞读取选项，读取音视频时采用非阻塞模式，对写入没影响。当没有音视频数据可用时，读取操作将立即返回而不是等待，这样可以在读取数据的同时执行其他操作，提高程序的响应性能。</p>
+</li>
+<li><p>类似FLV、MP4封装格式的打开、关闭和读取等操作属于I/O操作，通常是阻塞的，因为涉及文件的读写和磁盘访问，需要等待文件系统返回所需的数据或完成相应的操作。但是对packet和frame的读取可以是非阻塞的。</p>
+</li>
+<li><p>其中与内存IO操作相关的成员是AVIOContext *pb。</p>
+<ol>
+<li>解复用过程应该在avformat_open_input开始有读取操作，所以应该在此之前手动设置pb=avio_alloc_context申请的AVIOContext。</li>
+<li>复用在avformat_write_header开始有写入操作，应该在此之前设置为已经打开的AVIOContext。URL-IO设置avio_open2(&amp;ofmt_ctx-&gt;pb, out_filename,…);内存IO设置为avio_out=avformat_alloc_output_context2(…), ofmt_ctx-&gt;pb=avio_out;</li>
+</ol>
+</li>
+<li><p>内部有AVStream的指针数组，以及nb_streams流数量</p>
+</li>
+</ol>
+<h1 id="AVDictionary"><a href="#AVDictionary" class="headerlink" title="AVDictionary"></a>AVDictionary</h1><ol>
+<li><p>AVDictionary是存储封装格式的参数信息的一个数组，参数信息以字典形式的结构体AVDictionaryEntry存储。比如mp4的movflags:faststart，在录制完成之后把moov移动到文件头部，能够更快播放。</p>
+<pre><code> struct AVDictionary &#123;
+     int count;
+     AVDictionaryEntry *elems;
+ &#125;;
+ typedef struct AVDictionaryEntry &#123;
+     char *key;
+     char *value;
+ &#125; AVDictionaryEntry;
+</code></pre></li>
+<li><p>AVDictionary类型的解复用参数设置是av_dict_set()实现的，函数内部申请内存调用av_mallocz申请的堆内存；当AVDictionary里面的值被使用了，就会剔除掉对应值，剩下的是用不上的比如说写错的名称的。</p>
+</li>
+<li>AVDictionary类型的复用器参数设置是avio_open2()实现。</li>
+<li>AVDictionary只能申请堆内存，不能申请栈内存为局部变量，会报incomplete type错误。因为AVDictionary定义为.c文件中，编译时候已经被编译进去动态库，编译器看不到AVDictionary的实现。</li>
+</ol>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/04/13/FFmpeg%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">https://charstr.github.io/2024/04/13/FFmpeg%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                          
+                            <a href="/tags/FFmpeg/"># FFmpeg</a>
+                            
+                              
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                        
+                          <a class="next" rel="next" href="/2024/04/13/FFmpeg%E8%BD%AC%E7%A0%81%E6%93%8D%E4%BD%9C%EF%BC%88%E4%BA%94%EF%BC%89/">FFmpeg转码操作（五）</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
