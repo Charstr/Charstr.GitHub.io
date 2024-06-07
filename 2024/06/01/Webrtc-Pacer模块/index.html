@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="lly">
+
+
+
+
+
+<title>Webrtc Pacer模块 | lly&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.0.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">
+                    lly&#39;s Blog
+                </a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">
+                        博客
+                    </a>
+                    
+                    <a class="menu-item" href="/category">
+                        分类
+                    </a>
+                    
+                    <a class="menu-item" href="/tag">
+                        标签
+                    </a>
+                    
+                    <a class="menu-item" href="/about">
+                        关于
+                    </a>
+                    
+                        <input id="switch_default" type="checkbox" class="switch_default">
+                        <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+        <nav class="navbar-mobile" id="nav-mobile">
+            <div class="container">
+                <div class="navbar-header">
+                    <div>
+                        <a href="/">
+                            lly&#39;s Blog
+                        </a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                    </div>
+                    <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+                </div>
+                <div class="menu" id="mobile-menu">
+                    
+                        <a class="menu-item" href="/archives">
+                            博客
+                        </a>
+                        
+                        <a class="menu-item" href="/category">
+                            分类
+                        </a>
+                        
+                        <a class="menu-item" href="/tag">
+                            标签
+                        </a>
+                        
+                        <a class="menu-item" href="/about">
+                            关于
+                        </a>
+                        
+                </div>
+            </div>
+        </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+  
+    
+      <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">全部展开</a>
+        <a onclick="go_top()">回到顶部</a>
+        <a onclick="go_bottom()">回到底部</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function () {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function () {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? '全部展开' : '全部折叠';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+        
+
+          
+            <article class="post-wrap">
+              <header class="post-header">
+                <h1 class="post-title">
+                  Webrtc Pacer模块
+                </h1>
+                
+                  <div class="post-meta">
+                    
+                      Author: <a itemprop="author" rel="author" href="/">lly</a>
+                      
+
+                        
+                          <span class="post-time">
+                            Date: <a href="#">6月 1, 2024&nbsp;&nbsp;11:21:12</a>
+                          </span>
+                          
+                            
+                  </div>
+                  
+              </header>
+
+              <div class="post-content">
+                <h2 id="pacer"><a href="#pacer" class="headerlink" title="pacer"></a>pacer</h2><p>Pacer默认是探测码率的2.5倍。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">PacerConfig <span class="title">GoogCcNetworkController::GetPacingRates</span><span class="params">(Timestamp at_time)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Pacing rate is based on target rate before congestion window pushback,</span></span><br><span class="line">  <span class="comment">// because we don&#x27;t want to build queues in the pacer when pushback occurs.</span></span><br><span class="line">  DataRate pacing_rate = DataRate::<span class="built_in">Zero</span>();</span><br><span class="line">  <span class="keyword">if</span> (pace_at_max_of_bwe_and_lower_link_capacity_ &amp;&amp; estimate_) &#123;</span><br><span class="line">    pacing_rate =</span><br><span class="line">        std::<span class="built_in">max</span>(&#123;min_total_allocated_bitrate_, estimate_-&gt;link_capacity_lower,</span><br><span class="line">                  last_loss_based_target_rate_&#125;) *</span><br><span class="line">        pacing_factor_;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    pacing_rate =</span><br><span class="line">        std::<span class="built_in">max</span>(min_total_allocated_bitrate_, last_loss_based_target_rate_) *</span><br><span class="line">        pacing_factor_;</span><br><span class="line">  &#125;</span><br><span class="line">  DataRate padding_rate =</span><br><span class="line">      (last_loss_base_state_ == LossBasedState::kIncreaseUsingPadding)</span><br><span class="line">          ? std::<span class="built_in">max</span>(max_padding_rate_, last_loss_based_target_rate_)</span><br><span class="line">          : max_padding_rate_;</span><br><span class="line">  padding_rate = std::<span class="built_in">min</span>(padding_rate, last_pushback_target_rate_);</span><br><span class="line">  PacerConfig msg;</span><br><span class="line">  msg.at_time = at_time;</span><br><span class="line">  msg.time_window = TimeDelta::<span class="built_in">Seconds</span>(<span class="number">1</span>);</span><br><span class="line">  msg.data_window = pacing_rate * msg.time_window;</span><br><span class="line">  msg.pad_window = padding_rate * msg.time_window;</span><br><span class="line">  <span class="keyword">return</span> msg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id=""><a href="#" class="headerlink" title=" "></a> </h2><p>RtpVideoSender::OnBitrateUpdated根据探测码率、当前帧率、丢包率、rtt环路延时、丢包模型，更新FEC冗余度。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">RtpVideoSender::OnBitrateUpdated</span><span class="params">(BitrateAllocationUpdate update,</span></span></span><br><span class="line"><span class="params"><span class="function">                                      <span class="type">int</span> framerate)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// FecControllerDefault::UpdateFecRates</span></span><br><span class="line">  <span class="comment">// 实时获取FEC、NACK发送的数据量，计算可剩余留给编码器的码率</span></span><br><span class="line">  encoder_target_rate_bps_ = fec_controller_-&gt;<span class="built_in">UpdateFecRates</span>(</span><br><span class="line">      payload_bitrate_bps, framerate,</span><br><span class="line">      rtc::<span class="built_in">saturated_cast</span>&lt;<span class="type">uint8_t</span>&gt;(update.packet_loss_ratio * <span class="number">256</span>),</span><br><span class="line">      loss_mask_vector_, update.round_trip_time.<span class="built_in">ms</span>());</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FecControllerDefault::UpdateFecRates根据实时统计到的FEC和NACK数据量，计算出冗余数据占有量。探测码率减去冗余码率，剩下的分给编码器</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">uint32_t</span> <span class="title">FecControllerDefault::UpdateFecRates</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">uint32_t</span> estimated_bitrate_bps,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">int</span> actual_framerate_fps,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">uint8_t</span> fraction_lost,</span></span></span><br><span class="line"><span class="params"><span class="function">    std::vector&lt;<span class="type">bool</span>&gt; loss_mask_vector,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">int64_t</span> round_trip_time_ms)</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// 实时获取NACK和FEC的码率</span></span><br><span class="line">  protection_callback_-&gt;<span class="built_in">ProtectionRequest</span>(</span><br><span class="line">      &amp;delta_fec_params, &amp;key_fec_params, &amp;sent_video_rate_bps,</span><br><span class="line">      &amp;sent_nack_rate_bps, &amp;sent_fec_rate_bps);</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// Cap the overhead estimate to a threshold, default is 50%.</span></span><br><span class="line">  protection_overhead_rate =</span><br><span class="line">      std::<span class="built_in">min</span>(protection_overhead_rate, overhead_threshold_);</span><br><span class="line">  <span class="comment">// Source coding rate: total rate - protection overhead.</span></span><br><span class="line">  <span class="comment">// 分配给编码器的码率</span></span><br><span class="line">  <span class="keyword">return</span> estimated_bitrate_bps * (<span class="number">1.0</span> - protection_overhead_rate);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RtpVideoSender::ProtectionRequest：实时获取NACK和FEC的码率。FEC和NACK冗余数据量根据实际需要来，不做流量限制。只是会动态调低编码器码率，降低整体数据的发送量<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">RtpVideoSender::ProtectionRequest</span><span class="params">(<span class="type">const</span> FecProtectionParams* delta_params,</span></span></span><br><span class="line"><span class="params"><span class="function">                                      <span class="type">const</span> FecProtectionParams* key_params,</span></span></span><br><span class="line"><span class="params"><span class="function">                                      <span class="type">uint32_t</span>* sent_video_rate_bps,</span></span></span><br><span class="line"><span class="params"><span class="function">                                      <span class="type">uint32_t</span>* sent_nack_rate_bps,</span></span></span><br><span class="line"><span class="params"><span class="function">                                      <span class="type">uint32_t</span>* sent_fec_rate_bps)</span> </span>&#123;</span><br><span class="line">  *sent_video_rate_bps = <span class="number">0</span>;</span><br><span class="line">  *sent_nack_rate_bps = <span class="number">0</span>;</span><br><span class="line">  *sent_fec_rate_bps = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">const</span> RtpStreamSender&amp; stream : rtp_streams_) &#123;</span><br><span class="line">    stream.rtp_rtcp-&gt;<span class="built_in">SetFecProtectionParams</span>(*delta_params, *key_params);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> send_bitrate = stream.rtp_rtcp-&gt;<span class="built_in">GetSendRates</span>();</span><br><span class="line">    *sent_video_rate_bps += send_bitrate[RtpPacketMediaType::kVideo].<span class="built_in">bps</span>();</span><br><span class="line">    *sent_fec_rate_bps +=</span><br><span class="line">        send_bitrate[RtpPacketMediaType::kForwardErrorCorrection].<span class="built_in">bps</span>();</span><br><span class="line">    *sent_nack_rate_bps +=</span><br><span class="line">        send_bitrate[RtpPacketMediaType::kRetransmission].<span class="built_in">bps</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>VideoSendStreamImpl::OnBitrateUpdated 计算并生效编码码率参数</p>
+
+              </div>
+              
+                <section class="post-copyright">
+                  
+                    <p class="copyright-item">
+                      <span>Author:</span>
+                      <span>lly</span>
+                    </p>
+                    
+                      
+                        <p class="copyright-item">
+                          <span>Permalink:</span>
+                          <span><a href="https://charstr.github.io/2024/06/01/Webrtc-Pacer%E6%A8%A1%E5%9D%97/">https://charstr.github.io/2024/06/01/Webrtc-Pacer%E6%A8%A1%E5%9D%97/</a></span>
+                        </p>
+                        
+                          
+                            <p class="copyright-item">
+                              <span>License:</span>
+                              <span>Copyright (c) 2024 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                            </p>
+                            
+                              
+
+                </section>
+                
+                  <section class="post-tags">
+                    <div>
+                      <span>Tag(s):</span>
+                      <span class="tag">
+                        
+                      </span>
+                    </div>
+                    <div>
+                      <a href="javascript:window.history.back();">back</a>
+                      <span>· </span>
+                      <a href="/">home</a>
+                    </div>
+                  </section>
+                  <section class="post-nav">
+                    
+                      <a class="prev" rel="prev" href="/2024/06/01/Webrtc-probe%E6%A8%A1%E5%9D%97/">Webrtc probe模块</a>
+                      
+                        
+                          <a class="next" rel="next" href="/2024/05/27/Webrtc%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/">Webrtc数据传输</a>
+                          
+                  </section>
+
+
+            </article>
+</div>
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© lly | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
